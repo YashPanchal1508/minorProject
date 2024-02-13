@@ -2,20 +2,33 @@ const express = require('express')
 const pool = require('../db')
 const router = express.Router();
 
-router.get('/getstate', async(req,res) => {
+router.post('/getState', async(req,res) => {
 
-    const { countryId } = req.body;
+    const { page , limit } = req.body;
 
+    
     try {
-        let result = await pool.query(
-            'SELECT stateid, statename FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1',
-            [countryId]
-            )
+        // let result = await pool.query(
+            //     'SELECT stateid, statename FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1 AND',
+            //     [countryId]
+            //     )
 
-        // let result = await pool.query('select * from state')
+            const totalStateCount = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false'); 
+            const finalTotal = parseInt( totalStateCount.rows[0].count)
+            const offset = (page - 1) * limit
+            
+        let result = await pool.query('select * from state where isdeleted = false LIMIT $1 OFFSET $2',
+        [limit,offset])
 
             if(result){
-                res.send(result.rows)
+                res.status(200).json({
+                    data: result.rows,
+                    pagination : {
+                        finalTotal,
+                        totalPages : Math.ceil(finalTotal / limit),
+                        currentPage : page
+                    }
+                })
             }
             else{
                 console.log("Cannot get state")

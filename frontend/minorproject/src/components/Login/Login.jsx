@@ -1,6 +1,39 @@
+// import { useState } from "react";
+// import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 
 const Login = () => {
+  // const [userName, setUserName] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [error, setError] = useState(null);
+  // const navigate = useNavigate();
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch('http://localhost:8000/api/user/loginUser', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ userName, password }),
+  //     });
+
+  //     if(!response.ok){
+  //       const errorMessage = await response.json();
+  //       throw new Error(errorMessage.error || 'Failed to login');
+  //     } 
+
+  //     const data = await response.json();
+  //     console.log(data); 
+
+  //     navigate('/country');
+  //   } catch (error) {
+  //     console.error('Login error:', error.message);
+  //     setError(error.message);
+  //   }
+  // };
+
   return (
     <>
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8 h-screen bg-gradient-to-l from-indigo-500 via-purple-500 to-pink-500">

@@ -12,6 +12,7 @@ const CountryProvider = ({ children }) => {
   let [countries, setCountries] = useState([]);
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(0)
+  const [count, setCount] = useState(0)
   // const location = useLocation()
   
 
@@ -56,6 +57,7 @@ const CountryProvider = ({ children }) => {
       setCurrentPage(pagination.currentPage);
       console.log(countries)
       setTotalPage(pagination.totalPages);
+      setCount(pagination.totalCount)
 
     } catch (error) {
       console.error('Error fetching countries:', error.message);
@@ -224,7 +226,7 @@ const CountryProvider = ({ children }) => {
   }
 
   return (
-    <CountryContext.Provider value={{ countries, fetchCountries,setCurrentPage, deleteCountries, addCountry, updateCountry,sort, filterData, currentPage, totalPage }}>
+    <CountryContext.Provider value={{ count,countries, fetchCountries,setCurrentPage, deleteCountries, addCountry, updateCountry,sort, filterData, currentPage, totalPage }}>
       {children}
       <ToastContainer/>
     </CountryContext.Provider>
