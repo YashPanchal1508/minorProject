@@ -8,17 +8,12 @@ router.post('/getState', async(req,res) => {
 
     
     try {
-        // let result = await pool.query(
-            //     'SELECT stateid, statename FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1 AND',
-            //     [countryId]
-            //     )
-
-            const totalStateCount = await pool.query('SELECT COUNT(*) FROM state join country on state.countryid = country.countryid WHERE country.isdeleted = false'); 
+            const totalStateCount = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false'); 
             const finalTotal = parseInt( totalStateCount.rows[0].count)
             
             const offset = (page - 1) * limit
             
-        let result = await pool.query('SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE country.isdeleted = false LIMIT $1 OFFSET $2',
+        let result = await pool.query('SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2',
         [limit,offset])
 
             if(result){
@@ -83,7 +78,7 @@ router.post('/addState', async(req,res)=> {
 
 })
 
-router.delete('/deletestate/:id', async(req,res) => {
+router.delete('/deleteState/:id', async(req,res) => {
 
     const id = req.params.id;
    
@@ -92,7 +87,9 @@ router.delete('/deletestate/:id', async(req,res) => {
         const result = await pool.query('UPDATE state SET isdeleted = true WHERE stateid = $1 RETURNING *', [id])
 
         if(result.rowCount > 0){
-            res.status(200).json({message : 'country with ID deleted successfully.', result: result.rows})
+            // const updatedData = await pool.query(
+                // 'SELECT state.*, country.countryname FROM state join country on state.countryid = country.countryid  WHERE state.isdeleted = false and country.isdeleted = false');
+            res.status(200).json({ message: 'State with ID deleted successfully.'});
         }else{
             res.status(404).json({errorMessage: 'No state found'})
         }
@@ -103,10 +100,10 @@ router.delete('/deletestate/:id', async(req,res) => {
     }
 })
 
-router.put('/updateState/:id', async(req,res) => {
+router.put('/updateState', async(req,res) => {
 
-    const {stateName} = req.body;
-    const {id} = req.params;
+    const {stateName, id} = req.body;
+    
 
     
     try {

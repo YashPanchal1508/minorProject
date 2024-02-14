@@ -51,7 +51,7 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
     
     let params,codeParams;
     codeParams = code || '';
-    console.log(sortOrder)
+    // console.log(sortOrder)
 
     const intCode = parseInt(codeParams)
 
@@ -76,10 +76,7 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
         case 'state':
              params = [`%${search}%`, limit,offSet]   
              return await pool.query(
-                `SELECT * FROM ${tableName} WHERE isdeleted = false
-                 AND statename ILIKE $1
-                 ORDER BY statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'}
-                 LIMIT $2 OFFSET $3`,
+              `SELECT s.*, c.countryname  FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.isdeleted = false AND s.statename ILIKE $1 ORDER BY s.statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'} LIMIT $2 OFFSET $3`,
                 params
              );
         case 'city':
@@ -102,6 +99,8 @@ router.post('/pagination/:tableName' , async(req,res)=> {
 
         const { tableName } = req.params;
         const { page,limit,code,search } = req.body
+
+        // console.log(tableName, page , limit , code, search)
 
         // console.log(typeof code)
 

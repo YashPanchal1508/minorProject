@@ -10,11 +10,12 @@ export const stateSlice = createSlice({
             currentPage: 1,
             rowsPerPage: 5
         },
-            isOpen: false,
-            countries: [],
-            editState: null,
-            selectedCountry: '',
-  
+        isOpen: false,
+        countries: [],
+        editState: null,
+        selectedCountry: '',
+        searchQuery: ''
+
     },
     reducers: {
         setData: (state, action) => {
@@ -35,29 +36,40 @@ export const stateSlice = createSlice({
         closeModal: (state) => {
             state.isOpen = false;
         },
-        setCountries: (state,action) =>{
-                state.countries = action.payload;
+        setCountries: (state, action) => {
+            state.countries = action.payload;
         },
-        setEditState: (state,action) => {
+        setEditState: (state, action) => {
+            console.log(action.payload)
             state.editState = action.payload
         },
         clearEditState: (state) => {
             state.editState = null
         },
         setSelectedCountry: (state, action) => {
+            // console.log(action.payload)
             state.selectedCountry = action.payload;
-          },
-          addStateData: (state, action) => {
+        },
+        addStateData: (state, action) => {
             state.data.push(action.payload);
-          },
-          deleteStateData: (state, action) => {
-            state.data = state.data.filter(state => state.stateid !== action.payload.stateid);
-          }
-      
+        },
+        setSearchQuery: (state, action) => {
+            state.searchQuery = action.payload;
+        },
+        clearSearchQuery: (state) => {
+            state.searchQuery = ''
+        },
+        filterState : (state, action) =>{
+            state.data = action.payload;
+            state.pagination.finalTotal = action.payload.limit;
+            state.pagination.currentPage = action.payload.page
+        }
+
+
     }
 });
 
-export const { setData, setCurrentPage, setRowsPerPage, openModal, closeModal, setCountries, setEditState, clearEditState,setSelectedCountry,addStateData, deleteStateData  } = stateSlice.actions;
+export const { setData, setCurrentPage, setRowsPerPage, openModal, closeModal, setCountries, setEditState, clearEditState, setSelectedCountry, addStateData, setSearchQuery, clearSearchQuery,filterState } = stateSlice.actions;
 
 export default stateSlice.reducer;
 
