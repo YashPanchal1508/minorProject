@@ -10,10 +10,11 @@ export const stateSlice = createSlice({
             currentPage: 1,
             rowsPerPage: 5
         },
-        modal: {
             isOpen: false,
-            mode: 'add'
-          }
+            countries: [],
+            editState: null,
+            selectedCountry: '',
+  
     },
     reducers: {
         setData: (state, action) => {
@@ -28,20 +29,35 @@ export const stateSlice = createSlice({
         setRowsPerPage: (state, action) => {
             state.pagination.rowsPerPage = action.payload;
         },
-        openModal: (state, action) => {
-            state.modal.isOpen = true;
-            state.modal.mode = action.payload.mode;
+        openModal: (state) => {
+            state.isOpen = true;
+        },
+        closeModal: (state) => {
+            state.isOpen = false;
+        },
+        setCountries: (state,action) =>{
+                state.countries = action.payload;
+        },
+        setEditState: (state,action) => {
+            state.editState = action.payload
+        },
+        clearEditState: (state) => {
+            state.editState = null
+        },
+        setSelectedCountry: (state, action) => {
+            state.selectedCountry = action.payload;
           },
-          closeModal: (state) => {
-            state.modal.isOpen = false;
-            state.modal.mode = 'add';
+          addStateData: (state, action) => {
+            state.data.push(action.payload);
+          },
+          deleteStateData: (state, action) => {
+            state.data = state.data.filter(state => state.stateid !== action.payload.stateid);
           }
-       
+      
     }
 });
 
-
-
-export const { setData, setCurrentPage, setRowsPerPage, openModal,closeModal } = stateSlice.actions;
+export const { setData, setCurrentPage, setRowsPerPage, openModal, closeModal, setCountries, setEditState, clearEditState,setSelectedCountry,addStateData, deleteStateData  } = stateSlice.actions;
 
 export default stateSlice.reducer;
+

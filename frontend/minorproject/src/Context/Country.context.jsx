@@ -73,7 +73,6 @@ const CountryProvider = ({ children }) => {
         {
           method: 'DELETE',
         }
-
       );
 
       const data = await response.json();
