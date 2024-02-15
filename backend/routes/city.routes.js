@@ -73,7 +73,15 @@ router.put('/updateCity',async (req, res) => {
 
 })
 
-router.get('/getCity',async (req, res) => {
+router.post('/getCity',async (req, res) => {
+
+    const {page , limit} = req.body
+
+    const totalStateCount = await pool.query('SELECT COUNT(*) FROM city WHERE isdeleted = false'); 
+    const finalTotal = parseInt( totalStateCount.rows[0].count)
+
+    const offset = (page - 1) * limit
+
 
     try {
         const result = await pool.query(
@@ -89,12 +97,20 @@ router.get('/getCity',async (req, res) => {
             INNER JOIN country ON city.countryid = country.countryid
             INNER JOIN state ON city.stateid = state.stateid
             WHERE city.isdeleted = false
-            ORDER BY city.cityname ASC`
+            ORDER BY city.cityname ASC
+            LIMIT $1 OFFSET $2`, [limit,offset]
 
-        // 'select * from city'
         )
 
-        res.status(200).json((result.rows))
+        res.status(200).json({
+            data: result.rows,
+            pagination: {
+                finalTotal,
+                totalPages : Math.ceil(finalTotal / limit),
+                currentPage : page
+            }
+
+        })
 
     } catch (error) {
         console.error("Error Getting city", error);

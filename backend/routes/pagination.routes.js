@@ -76,7 +76,7 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
         case 'state':
              params = [`%${search}%`, limit,offSet]   
              return await pool.query(
-              `SELECT s.*, c.countryname  FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.isdeleted = false AND s.statename ILIKE $1 ORDER BY s.statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'} LIMIT $2 OFFSET $3`,
+              `SELECT s.*, c.countryname  FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.isdeleted = false AND (s.statename ILIKE $1 OR c.countryname ILIKE $1) ORDER BY s.statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'} LIMIT $2 OFFSET $3`,
                 params
              );
         case 'city':

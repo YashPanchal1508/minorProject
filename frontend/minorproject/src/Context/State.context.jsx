@@ -4,7 +4,7 @@
 
 import { createContext, useContext} from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { setData,setCurrentPage, setCountries, filterState } from '../redux/stateSlice';
+import { setData,setCurrentPage, setCountries, filterState, sortData } from '../redux/stateSlice';
 import { toast } from 'react-toastify';
 
 
@@ -65,11 +65,12 @@ const StateProvider = ({children}) => {
                 }
 
                 const result = await response.json();
+                // console.log(result)
 
                 if(result.updateMessage === 'State Updated'){
                         toast.success("State Successfully Added")
                 }else if(result.error === 'State already exists'){
-                        toast.success("State Already Exists")
+                        toast.error("State Already Exists")
                 }else if(result.message === 'State added successfully'){
                         toast.success("State Successfully Added ")
                 }else{
@@ -161,8 +162,35 @@ const StateProvider = ({children}) => {
         }
       };
 
+      
+  const  sort = async(tableName, page,limit, sortBy, sortOrder) => {
+    console.log(tableName, page,limit, sortBy, sortOrder)
+    const response = await fetch(`http://localhost:8000/api/sort/${tableName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ page, limit,sortBy,sortOrder }),
+    });
+
+    console.log(sortOrder)
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    const result = await response.json();
+    
+    const {pagination,data} = result
+    
+    console.log(result)
+
+    dispatch(sortData({data: data,  pagination: pagination}));
+
+  }
+
     return (
-        <StateContext.Provider value={{ getState, getAllCountries, addState, deleteState, filterData,updateState }}>
+        <StateContext.Provider value={{ getState, getAllCountries, addState, deleteState, filterData,updateState, sort }}>
             {children}
         </StateContext.Provider>
     )
