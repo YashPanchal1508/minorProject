@@ -91,12 +91,12 @@ const State = () => {
     dispatch(clearEditState())
     dispatch(setSelectedCountry(''));
   };
+  // console.log(editState)
 
   const handleSave = async () => {
     try {
-      // console.log(editState)
         if(editState){
-          await updateState(editState.stateid, stateName);
+          await updateState( stateName, selectedCountry, editState.stateid);
           toast.success("State Updated Successfully")
         }
         else{
@@ -120,8 +120,8 @@ const State = () => {
   };
 
   const handleEdit = (state) => {
-    console.log(state)
-    console.log(editState)
+    // console.log(state)
+    // console.log(editState)
     dispatch(setEditState(state));
     dispatch(openModal());
   };
@@ -204,7 +204,6 @@ const State = () => {
               onChange={handleCountryChange}
               fullWidth
               margin="normal"
-              className='text-center'
               // disabled={editState ? true : false}
             >
               {countries.map((country) => (

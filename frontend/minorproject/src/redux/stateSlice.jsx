@@ -41,7 +41,7 @@ export const stateSlice = createSlice({
             state.countries = action.payload;
         },
         setEditState: (state, action) => {
-            console.log(action.payload)
+            // console.log(action.payload)
             state.editState = action.payload
         },
         clearEditState: (state) => {

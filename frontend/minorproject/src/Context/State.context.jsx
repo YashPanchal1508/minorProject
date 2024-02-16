@@ -135,16 +135,17 @@ const StateProvider = ({children}) => {
           }
     }
 
-    const updateState = async (id, data) => {
-        console.log(data)
-        console.log(id)
+    const updateState = async (data,countryid,id) => {
+        // console.log(data)
+        // console.log(id)
+        // console.log(countryid,data, id)
         try {
           const response = await fetch(`http://localhost:8000/api/state/updateState`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ id: id , stateName: data}),
+            body: JSON.stringify({  data, countryid , id }),
           });
     
           if (response.ok) {
@@ -153,7 +154,8 @@ const StateProvider = ({children}) => {
     
           // Assuming the response contains the updated country data
           const updatedState = await response.json();
-            console.log(updateState)
+          console.log(updatedState)
+            // console.log(updateState)
           // Update the countries state with the updated country
           
     

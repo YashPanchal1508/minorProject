@@ -13,6 +13,7 @@ router.post('/addCity', async (req, res) => {
         if (countryResult.rows.length === 0 || stateResult.rows.length === 0) {
             return res.status(404).json({ error: 'Country or state not found.' });
         }
+        
         const cityResult = await pool.query(
             'INSERT INTO city (countryid, stateid, cityname) VALUES ($1, $2, LOWER($3)) RETURNING *',
             [countryId, stateId, cityName]
@@ -51,7 +52,7 @@ router.delete('/removeCity', async (req, res) => {
 
 
 router.put('/updateCity',async (req, res) => {
-    let { cityId, cityName } = req.body;
+    let { cityId, cityName, stateId, countryId } = req.body;
 
     // const countryResult = await pool.query('SELECT * FROM country WHERE countryid = $1', [countryId]);
     // const stateResult = await pool.query('SELECT * FROM state WHERE stateid = $1', [stateId]);
@@ -61,8 +62,8 @@ router.put('/updateCity',async (req, res) => {
     // }
 
     const cityUpdate = await pool.query(
-        'UPDATE city SET cityname = $1 WHERE cityid = $2 RETURNING *',
-        [cityName, cityId])
+        'UPDATE city SET cityname = $1, stateid = $2, countryid = $3 WHERE cityid = $4 RETURNING *',
+        [cityName, stateId, countryId ,cityId])
 
     if (cityUpdate) {
         res.status(200).json({ message: "City Updated SuccessFully", city: cityUpdate.rows[0] })

@@ -8,7 +8,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material';
 // import { fetchCityData, deleteCity } from './redux/citySlice'; // Import Redux actions for fetching city data and deleting cities
 import { useCityContext } from '../../../Context/city.context';
-import { setRowsPerPage, setCurrentPage, openModal, closeModal, clearEditState, setSelectedCountry, setSelectedState, setEditState } from '../../../redux/CitySlice';
+import { setRowsPerPage, setCurrentPage, openModal, closeModal, clearEditState, setSelectedCountry, setSelectedState, setEditState,} from '../../../redux/CitySlice';
+import { toast } from 'react-toastify';
 
 const City = () => {
   const dispatch = useDispatch();
@@ -18,9 +19,10 @@ const City = () => {
 
   const [cityName, setCityName] = useState('');
   const [stateName, setStateName] = useState('');
+  const [CityId, setCityId] = useState('')
   const { data: states, pagination, isOpen, countries, editState, selectedCountry, stateData, selectedState } = useSelector((state) => state.city);
 
-  const { getCity, getAllCountries, getAllStates } = useCityContext()
+  const { getCity, getAllCountries, getAllStates,addCity,updateCity} = useCityContext()
 
   useEffect(() => {
     getCity(1, 5)
@@ -41,7 +43,7 @@ const City = () => {
       dispatch(setSelectedCountry(editState.countryid));
       setStateName(editState.stateid)
       setCityName(editState.cityname);
-
+      setCityId(editState.cityid)
     }
   }, [editState]);
 
@@ -50,7 +52,7 @@ const City = () => {
   const handleEdit = (city) => {
     // console.log(state)
     // console.log(editState)
-    // SetEdit state have all row data
+    // SetEditstate have all row data
     dispatch(setEditState(city));
     dispatch(openModal());
   };
@@ -106,11 +108,29 @@ const City = () => {
   };
 
   const handleSearchChange = () => {
+    // for sorting 
+  }
+
+  const handleSave = async () => {
+    try {
+
+      if(editState){
+          await updateCity(selectedCountry, stateName, cityName, CityId)
+          toast.success("Country Updated Successfully")
+      }else{
+        await addCity(selectedCountry, stateName, cityName )
+      }
+        // dispatch(addCityData(cityName, selectedCountry, stateName))
+        getCity(pagination.currentPage, pagination.rowsPerPage)
+        dispatch(closeModal())
+
+    } catch (error) {
+      console.log("Error occurred", error)
+    }
+
 
   }
-  const handleSave = () => {
 
-  }
   const handleCountryChange = (event) => {
     dispatch(setSelectedCountry(event.target.value));
   }
@@ -156,7 +176,6 @@ const City = () => {
               onChange={handleCountryChange}
               fullWidth
               margin="normal"
-              className='text-center'
             // disabled={editState ? true : false}
             >
               {countries.map((country) => (
@@ -201,26 +220,28 @@ const City = () => {
       </div>
 
       {/* Add City Modal, Search Input, and other components similar to State component */}
+      <div className='mt-3'>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
 
-              <TableCell>City Id</TableCell>
-              <TableCell>City Name</TableCell>
-              <TableCell>State Name</TableCell>
-              <TableCell>Country Name</TableCell>
+              <TableCell className='text-center'>City Id</TableCell>
+              <TableCell className='text-center'>City Name</TableCell>
+              <TableCell className='text-center'>State Name</TableCell>
+              <TableCell className='text-center'>Country Name</TableCell>
               {/* Add more table headers as needed */}
-              <TableCell>Action</TableCell>
+              <TableCell className='text-center'>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {states.map((city) => (
               <TableRow key={city.cityid}>
-                <TableCell>{city.cityid}</TableCell>
-                <TableCell>{city.cityname}</TableCell>
-                <TableCell>{city.statename}</TableCell>
-                <TableCell>{city.countryname}</TableCell>
+                <TableCell className='text-center'>{city.cityid}</TableCell>
+                <TableCell className='text-center'>{city.cityname}</TableCell>
+                <TableCell className='text-center'>{city.statename}</TableCell>
+                <TableCell className='text-center'>{city.countryname}</TableCell>
                 {/* Add more table cells for additional city data */}
                 <TableCell>
                   <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(city)}>Edit</button>
@@ -258,6 +279,7 @@ const City = () => {
         />
 
       </TableContainer>
+      </div>
 
     </div>
   );

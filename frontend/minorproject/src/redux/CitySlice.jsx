@@ -47,24 +47,27 @@ export const citySlice = createSlice({
             state.selectedCountry = action.payload;
         },
         setSelectedState : (state,action) => {
-            console.log(action.payload)
+            // console.log(action.payload)
             state.selectedState= action.payload;
         },
         setEditState: (state, action) => {
-            console.log(action.payload)
+            // console.log(action.payload)
             state.editState = action.payload
         },
         clearEditState: (state) => {
             state.editState = null
         },
         setStates: (state, action) => {
-            console.log(action.payload)
+            // console.log(action.payload)
             state.stateData = action.payload;
+        },
+        addCityData : (state,action) => {
+                state.data.push(action.payload)
         }
     }
 })
 
 
-export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState} = citySlice.actions
+export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState,addCityData} = citySlice.actions
 
 export default citySlice.reducer;
