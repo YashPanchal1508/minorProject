@@ -10,6 +10,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Te
 import { useCityContext } from '../../../Context/city.context';
 import { setRowsPerPage, setCurrentPage, openModal, closeModal, clearEditState, setSelectedCountry, setSelectedState, setEditState,} from '../../../redux/CitySlice';
 import { toast } from 'react-toastify';
+import CloseIcon from '@mui/icons-material/Close';
 
 const City = () => {
   const dispatch = useDispatch();
@@ -20,18 +21,54 @@ const City = () => {
   const [cityName, setCityName] = useState('');
   const [stateName, setStateName] = useState('');
   const [CityId, setCityId] = useState('')
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [searchResults, setSearchResults] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [sortOrder, setSortOrder] = useState('');
+  const [column, setColumn] = useState('')
   const { data: states, pagination, isOpen, countries, editState, selectedCountry, stateData, selectedState } = useSelector((state) => state.city);
 
-  const { getCity, getAllCountries, getAllStates,addCity,updateCity} = useCityContext()
+  const { getCity, getAllCountries, getAllStates,addCity,updateCity,deleteCity,filterData,sort} = useCityContext()
 
   useEffect(() => {
-    getCity(1, 5)
-  }, []);
+    getCity(1, 5, sortOrder, column)
+  }, [sortOrder,column]);
 
   useEffect(() => {
     getAllCountries();
-    getAllStates();
+    // getAllStates(selectedCountry);
   }, [])
+
+  useEffect (() => {
+    getAllStates(selectedCountry)
+  },[selectedCountry])
+
+  // console.log(selectedCountry)
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if(!stateName){
+      newErrors.stateName = 'Pls select state name';
+     }
+
+
+     if(!selectedCountry){
+      newErrors.selectedCountry = 'Pls select country name ';
+     }
+
+     if(!cityName.match(/^[A-Za-z]{1,10}$/)){
+        newErrors.cityName = 'City should contain only alphabets (max 10 characters)'
+     }
+
+     if(cityName.length === 0){
+      newErrors.cityName = 'City should not blank'
+     }
+
+    setErrors(newErrors)
+
+    return Object.keys(newErrors).length === 0;
+  }
 
   useEffect(() => {
     if (!editState) {
@@ -57,40 +94,43 @@ const City = () => {
     dispatch(openModal());
   };
 
-  const handleDelete = () => {
+  const handleDelete =(cityId) => {
 
-  }
+    setDeleteConfirmation(cityId)
+
+  };
+
   const handleChangePage = (event, newPage) => {
     dispatch(setCurrentPage(newPage + 1));
-    getCity(newPage + 1, pagination.rowsPerPage);
+    getCity(newPage + 1, pagination.rowsPerPage,sortOrder,column);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     dispatch(setRowsPerPage(newRowsPerPage));
-    getCity(1, newRowsPerPage);
+    getCity(1, newRowsPerPage,sortOrder,column);
   };
 
   const handleFirstPageButtonClick = () => {
     dispatch(setCurrentPage(1));
-    getCity(1, pagination.rowsPerPage);
+    getCity(1, pagination.rowsPerPage,sortOrder,column);
   }
 
   const handleBackButtonClick = () => {
     const newPage = Math.max(1, pagination.currentPage - 1);
     dispatch(setCurrentPage(newPage));
-    getCity(newPage, pagination.rowsPerPage);
+    getCity(newPage, pagination.rowsPerPage,sortOrder,column);
   }
 
   const handleNextButtonClick = () => {
     const newPage = Math.min(pagination.totalPages, pagination.currentPage + 1);
     dispatch(setCurrentPage(newPage));
-    getCity(newPage, pagination.rowsPerPage);
+    getCity(newPage, pagination.rowsPerPage,sortOrder,column);
   }
 
   const handleLastPageButtonClick = () => {
     dispatch(setCurrentPage(pagination.totalPages));
-    getCity(pagination.totalPages, pagination.rowsPerPage);
+    getCity(pagination.totalPages, pagination.rowsPerPage,sortOrder,column);
   }
 
   const handleOpenModal = () => {
@@ -102,18 +142,39 @@ const City = () => {
 
   const handleCancel = () => {
     dispatch(clearEditState());
-    dispatch(closeModal());
     setCityName('')
     setStateName('')
+    setErrors({})
   };
 
-  const handleSearchChange = () => {
-    // for sorting 
+  const handleSearchChange =  (e) => {
+    const city = 'city';
+    const query = e.target.value;
+
+    let searchData;
+
+    searchData = {
+      search : query,
+      limit : pagination.rowsPerPage,
+      page: 1
+    }
+
+    if(searchData.search === ''){
+      getCity(1, pagination.rowsPerPage,sortOrder,column)
+      setSearchResults(false)
+    }else{
+      setSearchResults(true)
+      filterData(city, searchData)
+    }
+
   }
 
   const handleSave = async () => {
     try {
+      const isValid = validateForm();
 
+      // Check if the form is valid
+      if (isValid) {
       if(editState){
           await updateCity(selectedCountry, stateName, cityName, CityId)
           toast.success("Country Updated Successfully")
@@ -121,9 +182,9 @@ const City = () => {
         await addCity(selectedCountry, stateName, cityName )
       }
         // dispatch(addCityData(cityName, selectedCountry, stateName))
-        getCity(pagination.currentPage, pagination.rowsPerPage)
+        getCity(pagination.currentPage, pagination.rowsPerPage,sortOrder,column)
         dispatch(closeModal())
-
+    }
     } catch (error) {
       console.log("Error occurred", error)
     }
@@ -140,9 +201,30 @@ const City = () => {
 
   const handleStateChange = (event) => {
     setStateName(event.target.value);
+    // getAllStates(selectedCountry);
   }
 
+  
+  const cancelDelete = () => {
+    setDeleteConfirmation(null)
+}
 
+const confirmDelete = async() => {
+  await deleteCity(deleteConfirmation);
+  getCity(pagination.currentPage, pagination.rowsPerPage,sortOrder,column)
+  setDeleteConfirmation(null)
+}
+
+const handleClose =() => {
+    dispatch(closeModal())
+}
+
+const handleSort = async(columnName) => {
+  setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  setColumn(columnName)
+  await sort('city', pagination.currentPage, pagination.rowsPerPage, columnName, sortOrder)
+ }
+ 
   return (
     <div>
       <div className="w-[100%] flex justify-between">
@@ -167,7 +249,11 @@ const City = () => {
         {/* Dialog Box */}
 
         <Dialog open={isOpen} onClose={handleCancel}>
-          <DialogTitle>{editState ? 'Edit City' : 'Add City'}</DialogTitle>
+          <DialogTitle className='flex justify-between'> {editState ? 'Edit City' : 'Add City'}
+          <IconButton aria-label="close" onClick={handleClose}>
+          <CloseIcon />
+        </IconButton>
+          </DialogTitle>
           <DialogContent>
             <TextField
               select
@@ -176,6 +262,8 @@ const City = () => {
               onChange={handleCountryChange}
               fullWidth
               margin="normal"
+              error={!!errors.selectedCountry}
+              helperText={errors.selectedCountry}
             // disabled={editState ? true : false}
             >
               {countries.map((country) => (
@@ -191,6 +279,8 @@ const City = () => {
               onChange={handleStateChange}
               fullWidth
               margin="normal"
+              error={!!errors.stateName}
+              helperText={errors.stateName}
             // disabled={editState ? true : false}
             >
               {stateData.map((state) => (
@@ -205,6 +295,8 @@ const City = () => {
               onChange={handleCityNameChange}
               fullWidth
               margin="normal"
+              error={!!errors.cityName}
+              helperText={errors.cityName}
             />
           </DialogContent>
           <DialogActions>
@@ -222,15 +314,15 @@ const City = () => {
       {/* Add City Modal, Search Input, and other components similar to State component */}
       <div className='mt-3'>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper}  style={{ maxHeight: pagination.rowsPerPage > 5 || pagination.rowsPerPage === -1 ? '400px' : 'none', overflowY: 'auto' }}>
         <Table>
-          <TableHead>
+          <TableHead className='sticky top-0 bg-white'>
             <TableRow>
 
               <TableCell className='text-center'>City Id</TableCell>
-              <TableCell className='text-center'>City Name</TableCell>
-              <TableCell className='text-center'>State Name</TableCell>
-              <TableCell className='text-center'>Country Name</TableCell>
+              <TableCell className='text-center cursor-pointer' onClick={() => handleSort('cityname')}>City Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
+              <TableCell className='text-center cursor-pointer' onClick={() => handleSort('statename')}>State Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
+              <TableCell className='text-center cursor-pointer' onClick={() => handleSort('countryname')}>Country Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
               {/* Add more table headers as needed */}
               <TableCell className='text-center'>Action</TableCell>
             </TableRow>
@@ -251,8 +343,8 @@ const City = () => {
             ))}
           </TableBody>
         </Table>
-
-        <TablePagination
+        <div className="sticky bottom-0 bg-white z-10">
+      {!searchResults &&  <TablePagination
           rowsPerPageOptions={[5, 10, 25]} // Options for rows per page
           component="div"
           count={Number.isNaN(pagination.finalTotal) ? 0 : Number(pagination.finalTotal)}
@@ -276,11 +368,32 @@ const City = () => {
               </IconButton>
             </div>
           )}
-        />
+        />}
 
+            </div>
       </TableContainer>
       </div>
 
+      {   deleteConfirmation  &&   <div className="fixed inset-0 z-20 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50 "></div>
+          <div className="bg-white p-8 rounded-md z-20">
+            <p>Are you sure you want to delete this City?</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="mr-4 text-white bg-opacity-75 z-50 p-2 hover:bg-opacity-100 bg-blue-600 rounded-md"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+              <button
+                className="text-white bg-red-500 bg-opacity-75 z-50 p-2 hover:bg-opacity-100 rounded-md"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>}
     </div>
   );
 };

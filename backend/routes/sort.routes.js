@@ -39,6 +39,17 @@ router.post('/:tableName', async (req, res) => {
     LIMIT $1 OFFSET $2
     `;
   }
+  else if(tableName ==='city'){
+    query = `
+    SELECT city.*, country.countryname, state.statename
+    FROM city 
+    JOIN country ON city.countryid = country.countryid
+    JOIN state  ON city.stateid = state.stateid
+    WHERE city.isdeleted = false
+    ORDER BY ${sortBy} ${sortOrder === 'asc' ? 'ASC' : 'DESC'}
+    LIMIT $1 OFFSET $2
+    `;
+  }
   else {
     return res.status(400).json({ error: 'Invalid table name' });
   }

@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.post('/getState', async (req, res) => {
 
-    const { page, limit } = req.body;
+    const { page, limit,sort,column } = req.body;
 
 
     try {
@@ -12,9 +12,16 @@ router.post('/getState', async (req, res) => {
         const finalTotal = parseInt(totalStateCount.rows[0].count)
 
         const offset = (page - 1) * limit
+            let query;
 
-        let result = await pool.query('SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2',
-            [limit, offset])
+            query = `SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false`
+
+            if(sort && column){
+                    query +=  ` ORDER BY ${column} ${sort === 'asc' ? 'ASC' : 'DESC'}`
+            }
+
+            query += ' LIMIT $1 OFFSET $2' 
+        let result = await pool.query(query, [limit, offset])
 
         if (result) {
             res.status(200).json({
@@ -138,9 +145,14 @@ router.get('/getAllCountries', async (req, res) => {
         res.status(500).json("Internal Server Error")
     }
 })
-router.get('/getAllStates', async (req, res) => {
+router.post('/getAllStates', async (req, res) => {
+    const { countryid } = req.body;
+    if (!countryid) {
+        return res.status(400).json({ error: 'Country id is required' });
+      }
     try {
-        const result = await pool.query('select * from state where isdeleted = false');
+        const result = await pool.query('SELECT state.* FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1 AND state.isdeleted = false',[countryid]);
+
         res.status(200).json({ result: result.rows })
 
     } catch (error) {
@@ -148,6 +160,28 @@ router.get('/getAllStates', async (req, res) => {
     }
 })
 
+router.post('/checkDuplicateState', async (req, res) => {
+    try {
+      const { statename } = req.body;
+  
+      if (typeof statename !== 'string') {
+        return res.status(400).json({ error: 'Invalid countryName provided' });
+      }
+  
+      // Check for duplicate city name
+      const duplicateState = await pool.query(
+        'SELECT COUNT(*) FROM state WHERE LOWER(statename) = LOWER($1) AND isdeleted = false',
+        [statename.toLowerCase()]
+      );
+  
+      res.status(200).json({
+        isDuplicate: duplicateState.rows[0].count > 0, // Check the count in the first row
+      });
+    } catch (error) {
+      console.error('Error checking duplicate country name:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 module.exports = router
 

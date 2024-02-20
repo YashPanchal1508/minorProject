@@ -7,59 +7,46 @@ const jwt = require('jsonwebtoken');
 // const verifyToken = require('../middleware/verifyToken');
 const JWT_SECRET = "yashpanchaluasnnasuanausas"
 
-router.post('/createUser',
-    [
-        body("userName", "Enter a valid name").isLength({ min: 3 }),
-        body("password", "Enter a valid password").isLength({ min: 5 }),
-    ]
-    , async (req, res) => {
+router.post('/createUser', [
+    body("userName", "Enter a valid name").isLength({ min: 3 }),
+    body("password", "Password must be at least 5 characters long").isLength({ min: 5 }),
+    body("email", "Enter a valid email").isEmail(),
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    // Check whether user exists or not in the database
+    try {
+        const { userName, password, email } = req.body;
 
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        //check wether user exist or not postgres
-        try {
+        const checkUser = await pool.query(
+            'SELECT * FROM users WHERE username = $1 LIMIT 1',
+            [userName]
+        );
 
-            const { userName, password } = req.body
+        if (checkUser.rowCount > 0) {
+            return res.status(409).json({ error: "User already exists" });
+        } else {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
 
-            const checkUser = await pool.query(
-                'select * from users where username = $1  LIMIT 1'
-                , [userName]
-            )
+            const createUser = await pool.query(
+                'INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING *',
+                [userName, hashedPassword, email]
+            );
 
-            if (checkUser.rowCount > 0) {
-                res.status(409).json({ error: "User is already exits" });
+            if (createUser.rowCount > 0) {
+                return res.status(201).json({ message: "User created successfully!", user: createUser.rows[0] });
             }
-            else {
-
-                const salt = await bcrypt.genSalt(10);
-                // console.log(salt)
-                const hashedPassword = await bcrypt.hash(password, salt);
-
-
-                const createUser = await pool.query(
-                    'INSERT INTO users (username , password) VALUES ($1, $2) '
-                    , [userName, hashedPassword])
-
-                if (createUser) {
-                    res.status(201).send({ message: "User created successfully!", user: createUser.rows[0]});
-                }
-            }
-
-
-        } catch (error) {
-            console.log("Error adding user", error)
-            res.status(500).json({ error: "Some Error has occur " })
         }
+    } catch (error) {
+        console.error("Error adding user", error);
+        return res.status(500).json({ error: "Some error has occurred" });
+    }
+});
 
-    })
-
-router.post('/loginUser',
-    [
-        body("userName", "Enter a valid email").notEmpty(),
-        body("password", "password cannot be blank").notEmpty(),
-    ], async (req, res) => {
+router.post('/loginUser', async (req, res) => {
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -87,7 +74,7 @@ router.post('/loginUser',
             }
             
                 const user = userExist.rows[0];
-                // console.log(user)
+                console.log(user)
     
                 const passwordCompare = await bcrypt.compare(password, user.password)
     

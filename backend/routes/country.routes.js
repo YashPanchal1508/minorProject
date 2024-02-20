@@ -6,18 +6,23 @@ const router = express.Router();
 
 router.post('/getCountry', async (req, res) => {
   try {
-    let { page, limit } = req.body;
+    let { page, limit,sort,column } = req.body;
 
     // First query to get the total count
     const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
     const totalCount = totalCountQuery.rows[0].count;
 
     const offset = (page - 1) * limit
+    let query;
+    query = `SELECT * FROM country WHERE isdeleted = false `
 
+    if(sort &&  column){
+        query +=  ` ORDER BY ${column} ${sort === 'asc' ? "ASC" : "DESC"}`
+    }
+
+    query += ` LIMIT $1 OFFSET $2`
     // Second query to get paginated data
-    const result = await pool.query(
-      'SELECT * FROM country WHERE isdeleted = false LIMIT $1 OFFSET $2',
-      [limit, offset]
+    const result = await pool.query(query, [limit, offset]
     );
     
     res.status(200).json({
@@ -113,6 +118,29 @@ router.put('/updateCountry', async(req,res) => {
       }
 
 })
+
+router.post('/checkDuplicateCountry', async (req, res) => {
+  try {
+    const { countryName } = req.body;
+
+    if (typeof countryName !== 'string') {
+      return res.status(400).json({ error: 'Invalid countryName provided' });
+    }
+
+    // Check for duplicate city name
+    const duplicateCity = await pool.query(
+      'SELECT COUNT(*) FROM country WHERE LOWER(countryname) = LOWER($1) AND isdeleted = false',
+      [countryName.toLowerCase()]
+    );
+
+    res.status(200).json({
+      isDuplicate: duplicateCity.rows[0].count > 0, // Check the count in the first row
+    });
+  } catch (error) {
+    console.error('Error checking duplicate country name:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 module.exports = router

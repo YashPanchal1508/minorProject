@@ -63,7 +63,6 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
     // console.log( codeParams)
     
     
-
     switch (tableName) {
         case 'country':
              params = [`%${search}%`, intCode, limit, offSet]    
@@ -82,10 +81,13 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
         case 'city':
              params = [`%${search}%`,limit,offSet];
              return await pool.query(
-                `SELECT * FROM ${tableName} WHERE isdeleted = false
-                 AND cityname ILIKE $1
-                 ORDER BY cityname ${sortOrder === 'ASC' ? 'ASC' : 'DESC' }
-                 LIMIT $2 OFFSET $3`,
+                `SELECT city.*, state.statename, country.countryname 
+                FROM city
+                JOIN state ON city.stateid = state.stateid
+                JOIN country ON city.countryid = country.countryid
+                WHERE city.isdeleted = false
+                AND ( country.countryname ILIKE $1 OR state.statename ILIKE $1 OR city.cityname ILIKE $1 )
+                LIMIT $2 OFFSET $3`,
                 params
              );
         default:

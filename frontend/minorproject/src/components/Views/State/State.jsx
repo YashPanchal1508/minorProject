@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { useStateContext } from '../../../Context/State.context'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material';
 import { toast } from 'react-toastify';
+import CloseIcon from '@mui/icons-material/Close';
+
 
 
 
@@ -22,13 +24,15 @@ const State = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [searchResults, setSearchResults] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [columnName, setColumnName] = useState('')
+  const [errors, setErrors] = useState({});
   
 
 
 
   useEffect(() => {
-    getState(1, 5)
-  }, [])
+    getState(1, 5,sortOrder,columnName)
+  }, [sortOrder,columnName])
 
   useEffect(() => {
     getAllCountries();
@@ -46,6 +50,24 @@ const State = () => {
     }
   }, [editState]);
 
+  const validateForm = () => {
+    const newErrors = {};
+     
+    if(!stateName.match(/^[A-Za-z]{1,10}$/)){
+      newErrors.stateName = 'State name should contain only alphabets (max 10 characters)';
+    }
+    if(stateName.length === 0){
+     newErrors.stateName = 'State name should not blank'
+    }
+
+     if(!selectedCountry){
+      newErrors.selectedCountry = 'Pls select country name';
+     }
+
+     setErrors(newErrors);
+
+     return Object.keys(newErrors).length === 0;
+   }
 
   const handleDelete =(stateId) => {
 
@@ -55,35 +77,35 @@ const State = () => {
 
   const handleChangePage = (event, newPage) => {
     dispatch(setCurrentPage(newPage + 1));
-    getState(newPage + 1, pagination.rowsPerPage);
+    getState(newPage + 1, pagination.rowsPerPage,sortOrder,columnName);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     dispatch(setRowsPerPage(newRowsPerPage));
-    getState(1, newRowsPerPage);
+    getState(1, newRowsPerPage,sortOrder,columnName);
   };
 
   const handleFirstPageButtonClick = () => {
     dispatch(setCurrentPage(1));
-    getState(1, pagination.rowsPerPage);
+    getState(1, pagination.rowsPerPage,sortOrder,columnName);
   }
 
   const handleBackButtonClick = () => {
     const newPage = Math.max(1, pagination.currentPage - 1);
     dispatch(setCurrentPage(newPage));
-    getState(newPage, pagination.rowsPerPage);
+    getState(newPage, pagination.rowsPerPage,sortOrder,columnName);
   }
 
   const handleNextButtonClick = () => {
     const newPage = Math.min(pagination.totalPages, pagination.currentPage + 1);
     dispatch(setCurrentPage(newPage));
-    getState(newPage, pagination.rowsPerPage);
+    getState(newPage, pagination.rowsPerPage,sortOrder,columnName);
   }
 
   const handleLastPageButtonClick = () => {
     dispatch(setCurrentPage(pagination.totalPages));
-    getState(pagination.totalPages, pagination.rowsPerPage);
+    getState(pagination.totalPages, pagination.rowsPerPage,sortOrder,columnName);
   }
 
   const handleOpenModal = () => {
@@ -94,7 +116,10 @@ const State = () => {
   // console.log(editState)
 
   const handleSave = async () => {
-    try {
+    const isValid = validateForm();
+
+    // Check if the form is valid
+    if (isValid) {
         if(editState){
           await updateState( stateName, selectedCountry, editState.stateid);
           toast.success("State Updated Successfully")
@@ -104,19 +129,19 @@ const State = () => {
           // Update the Redux store with the new state data
           dispatch(addStateData({ stateName, countryId: selectedCountry }));
         }
-      getState(pagination.currentPage, pagination.rowsPerPage)
+      getState(pagination.currentPage, pagination.rowsPerPage,sortOrder,columnName)
       // Close the modal or perform other necessary actions
       dispatch(closeModal());
       dispatch(clearEditState());
-    } catch (error) {
-      console.error('Error Adding State:', error);
     }
+    
   };
 
   const handleCancel = () => {
     dispatch(clearEditState());
-    dispatch(closeModal());
+    // dispatch(closeModal());
     setStateName('')
+    setErrors({})
   };
 
   const handleEdit = (state) => {
@@ -140,7 +165,7 @@ const State = () => {
 
   const confirmDelete = async() => {
           await deleteState(deleteConfirmation);
-          getState(pagination.currentPage, pagination.rowsPerPage)
+          getState(pagination.currentPage, pagination.rowsPerPage,sortOrder,columnName)
           setDeleteConfirmation(null)
   }
 
@@ -157,7 +182,7 @@ const State = () => {
     }
 
     if(searchData.search === ''){
-      getState(1, pagination.rowsPerPage)
+      getState(1, pagination.rowsPerPage,sortOrder,columnName)
       setSearchResults(false)
     }else{
       setSearchResults(true)
@@ -168,8 +193,15 @@ const State = () => {
 
  const  handleSort = async(columnName) => {
   setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  setColumnName(columnName);
   await sort('state', pagination.currentPage, pagination.rowsPerPage, columnName, sortOrder)
  }
+
+ const handleClose =() => {
+      dispatch(closeModal())
+ }
+
+
 
   return (
     <div>
@@ -195,7 +227,11 @@ const State = () => {
         </div>
 
         <Dialog open={isOpen} onClose={handleCancel}>
-          <DialogTitle>{editState ? 'Edit State' : 'Add State'}</DialogTitle>
+          <DialogTitle className='flex justify-between'>{editState ? 'Edit State' : 'Add State'}
+          <IconButton aria-label="close" onClick={handleClose}>
+          <CloseIcon />
+        </IconButton>
+          </DialogTitle>
           <DialogContent>
             <TextField
               select
@@ -204,6 +240,8 @@ const State = () => {
               onChange={handleCountryChange}
               fullWidth
               margin="normal"
+              error={!!errors.selectedCountry}
+              helperText={errors.selectedCountry}
               // disabled={editState ? true : false}
             >
               {countries.map((country) => (
@@ -218,6 +256,8 @@ const State = () => {
               onChange={handleStateNameChange}
               fullWidth
               margin="normal"
+              error={!!errors.stateName}
+              helperText={errors.stateName}
             />
           </DialogContent>
           <DialogActions>
@@ -237,8 +277,8 @@ const State = () => {
         <Table sx={{ minWidth: 500 }}>
           <TableHead className="sticky top-0 bg-white">
             <TableRow>
-              <TableCell className='cursor-pointer text-center' onClick={() => handleSort('countryname')}>Country Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
               <TableCell className='text-center'>State ID</TableCell>
+              <TableCell className='cursor-pointer text-center' onClick={() => handleSort('countryname')}>Country Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
               <TableCell className='cursor-pointer text-center' onClick={() => handleSort('statename')}>State Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
               <TableCell className='text-center'>Action</TableCell>
             </TableRow>
@@ -247,8 +287,8 @@ const State = () => {
           {states.length > 0 ? (
               states.map((state) => (
                 <TableRow key={state.stateid} className='text-center'>
-                  <TableCell className='text-center'>{state.countryname}</TableCell>
                   <TableCell className='text-center'>{state.stateid}</TableCell>
+                  <TableCell className='text-center'>{state.countryname}</TableCell>
                   <TableCell className='text-center'>{state.statename}</TableCell>
                   <TableCell>
                     <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(state)}>Edit</button>

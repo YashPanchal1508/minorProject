@@ -30,14 +30,14 @@ const CountryProvider = ({ children }) => {
   //     console.error('Error fetching countries:', error.message);
   //   }
   // };
-  const fetchCountries = async (page, limit) => {
+  const fetchCountries = async (page, limit,sort,column) => {
     try {
       const response = await fetch('http://localhost:8000/api/country/getCountry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ page, limit }) 
+        body: JSON.stringify({ page, limit, sort,column }) 
       });
 
         // console.log(page)
@@ -85,6 +85,18 @@ const CountryProvider = ({ children }) => {
 
   const addCountry = async (data) => {
     try {
+
+      const checkDuplicateCountry = await fetch(`http://localhost:8000/api/country/checkDuplicateCountry`,{
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countryName: data.countryName })
+      });
+
+      const  duplicateData = await checkDuplicateCountry.json();
+      if(duplicateData.isDuplicate === true){
+        toast.success("Country is Already Exists")
+      }
+
       const response = await fetch('http://localhost:8000/api/country/createCountry', {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
@@ -96,13 +108,9 @@ const CountryProvider = ({ children }) => {
   
         if (responseData.updateMessage === 'Country Added') {
           toast.success("Country is Added");
-        } else if (responseData.error === 'Country already exists') {
-          toast.error("Country already exists");
-        } else {
+        }else {
           toast.success("Country is Added");
         }
-      } else {
-        toast.error("Failed to add country. Please try again.");
       }
     } catch (error) {
       console.error("Error adding country", error);
@@ -223,6 +231,8 @@ const CountryProvider = ({ children }) => {
     setCurrentPage(pagination.currentPage)
     setTotalPage(pagination.totalPages)
   }
+
+
 
   return (
     <CountryContext.Provider value={{ count,countries, fetchCountries,setCurrentPage, deleteCountries, addCountry, updateCountry,sort, filterData, currentPage, totalPage }}>

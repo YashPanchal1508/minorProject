@@ -1,7 +1,13 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation,useNavigate  } from 'react-router-dom';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const removeItem = () => {
+    localStorage.clear();
+    navigate("/")
+  }
 
   return (
     <div className="flex flex-col items-center justify-center bg-slate-800  text-white font-sans w-[15%] h-screen">
@@ -28,6 +34,15 @@ const Sidebar = () => {
         }`}
       >
         City
+      </Link>
+      <Link
+        to="/login"
+        onClick={removeItem}
+        className={`py-3 px-5 mb-6  text-center rounded text-lg font-extrabold  ${
+          location.pathname === '/login' ? 'text-slate-400' : 'hover:text-slate-500  transition duration-300 ease-in-out'
+        }`}
+      >
+        Logout
       </Link>
     </div>
   );

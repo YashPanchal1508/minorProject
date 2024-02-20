@@ -569,6 +569,7 @@ function Country() {
   const [page, setPage] = useState(0);
   const [searchResults, setSearchResults] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [columnName, setColumnName] = useState('')
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const {
@@ -587,8 +588,8 @@ function Country() {
 
 
   useEffect(() => {
-    fetchCountries(page + 1, rowsPerPage);
-  }, [page, rowsPerPage]);
+    fetchCountries(page + 1, rowsPerPage,sortOrder,columnName);
+  }, [page, rowsPerPage,sortOrder,columnName]);
 
   const handleDelete = async (id) => {
     setDeleteConfirmation(id);
@@ -602,9 +603,9 @@ function Country() {
         const newPage = currentPage > 1 ? currentPage - 1 : 1;
         setCurrentPage(newPage);
         setPage(newPage - 1);
-        fetchCountries(newPage,rowsPerPage)
+        fetchCountries(newPage,rowsPerPage,sortOrder,columnName)
       }else{
-        fetchCountries(currentPage,rowsPerPage);
+        fetchCountries(currentPage,rowsPerPage,sortOrder,columnName);
       }
       setDeleteConfirmation(null);
     } catch (error) {
@@ -659,7 +660,7 @@ function Country() {
     }
 
     if (searchData.search === '' && searchData.code === '') {
-      fetchCountries(1, rowsPerPage);
+      fetchCountries(1, rowsPerPage,sortOrder,columnName);
       setSearchResults(false);
     } else {
       setSearchResults(true);
@@ -669,13 +670,13 @@ function Country() {
 
   const handleSort = async (columnName) => {
     setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
-    console.log(columnName);
+    setColumnName(columnName);
     await sort('country', currentPage, rowsPerPage, columnName, sortOrder);
   };
 
   const handleChangePage = (event, newPage) => {
     setCurrentPage(newPage + 1); // Adjusting newPage to 1-based index
-    fetchCountries(newPage + 1, rowsPerPage);
+    fetchCountries(newPage + 1, rowsPerPage,sortOrder,columnName);
   };
   
   // Function to handle rows per page change
@@ -683,33 +684,33 @@ function Country() {
     const newRowsPerPage = event.target.value === '-1' ? parseInt(count) : parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     setPage(0); // Reset page to 0 when changing rows per page
-    fetchCountries(1, newRowsPerPage); // Fetch data for the first page with the new rows per page
+    fetchCountries(1, newRowsPerPage,sortOrder,columnName); // Fetch data for the first page with the new rows per page
   };
   
   // Function to handle first page button click
   const handleFirstPageButtonClick = () => {
     setCurrentPage(1);
-    fetchCountries(1, rowsPerPage);
+    fetchCountries(1, rowsPerPage,sortOrder,columnName);
   };
   
   // Function to handle back button click
   const handleBackButtonClick = () => {
     const newPage = Math.max(1, currentPage - 1);
     setCurrentPage(newPage);
-    fetchCountries(newPage, rowsPerPage);
+    fetchCountries(newPage, rowsPerPage,sortOrder,columnName);
   };
   
   // Function to handle next button click
   const handleNextButtonClick = () => {
     const newPage = Math.min(totalPage, currentPage + 1);
     setCurrentPage(newPage);
-    fetchCountries(newPage, rowsPerPage);
+    fetchCountries(newPage, rowsPerPage,sortOrder,columnName);
   };
   
   // Function to handle last page button click
   const handleLastPageButtonClick = () => {
     setCurrentPage(totalPage);
-    fetchCountries(totalPage, rowsPerPage);
+    fetchCountries(totalPage, rowsPerPage,sortOrder,columnName);
   };
 
 

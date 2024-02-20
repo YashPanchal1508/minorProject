@@ -63,11 +63,23 @@ export const citySlice = createSlice({
         },
         addCityData : (state,action) => {
                 state.data.push(action.payload)
-        }
+        },
+        filterCity: (state,action) => {
+            state.data = action.payload;
+            state.pagination.finalTotal = action.payload.limit;
+            state.pagination.currentPage = action.payload.page
+        },
+        sortData :(state, action) => {
+            const {totalPages,totalCount, currentPage} = action.payload.pagination
+            state.data = action.payload.data;
+            state.pagination.currentPage = currentPage;
+            state.pagination.totalPages = totalPages;
+            state.pagination.finalTotal = totalCount;
+        }   
     }
 })
 
 
-export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState,addCityData} = citySlice.actions
+export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState,addCityData,filterCity,sortData} = citySlice.actions
 
 export default citySlice.reducer;
