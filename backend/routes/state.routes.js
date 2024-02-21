@@ -4,9 +4,9 @@ const router = express.Router();
 
 router.post('/getState', async (req, res) => {
 
-    const { page, limit,sort,column } = req.body;
+    const { page, limit,sort, column } = req.body;
 
-
+    console.log(page,limit,sort,column)
     try {
         const totalStateCount = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
         const finalTotal = parseInt(totalStateCount.rows[0].count)
@@ -20,7 +20,7 @@ router.post('/getState', async (req, res) => {
                     query +=  ` ORDER BY ${column} ${sort === 'asc' ? 'ASC' : 'DESC'}`
             }
 
-            query += ' LIMIT $1 OFFSET $2' 
+            query += ' LIMIT $1 OFFSET $2'  
         let result = await pool.query(query, [limit, offset])
 
         if (result) {
@@ -60,7 +60,7 @@ router.post('/addState', async (req, res) => {
         if (findState.rowCount > 0) {
             const existingState = findState.rows[0];
             if (existingState.isdeleted) {
-                const updatedQuery = await pool.query('UPDATE state SET isdeleted = false WHERE statename = $1', [statename]);
+                const updatedQuery = await pool.query('UPDATE state SET countryid = $1, isdeleted = false WHERE statename = $2', [countryid, statename]);
                 return res.status(200).json({ updateMessage: "State Updated", rows: updatedQuery.rows });
             } else {
                 return res.status(400).json({ error: 'State already exists' });
@@ -86,26 +86,30 @@ router.post('/addState', async (req, res) => {
 })
 
 router.delete('/deleteState/:id', async (req, res) => {
-
     const id = req.params.id;
-
     try {
+        // Check if the state is associated with any cities
+        const cityCheck = await pool.query('SELECT * FROM city WHERE stateid = $1 and isdeleted = false', [id]);
 
+        if (cityCheck.rows.length > 0) {
+            // If the state is associated with cities, return a message indicating the association
+            return res.status(200).json({ message: 'Cannot delete state as it is associated with cities.' });
+        }
+
+        // If the state is not associated with any cities, proceed with deletion
         const result = await pool.query('UPDATE state SET isdeleted = true WHERE stateid = $1 RETURNING *', [id])
 
         if (result.rowCount > 0) {
-            // const updatedData = await pool.query(
-            // 'SELECT state.*, country.countryname FROM state join country on state.countryid = country.countryid  WHERE state.isdeleted = false and country.isdeleted = false');
-            res.status(200).json({ message: 'State with ID deleted successfully.' });
+            return res.status(200).json({ message: `State deleted successfully.`, result: result.rows });
         } else {
-            res.status(404).json({ errorMessage: 'No state found' })
+            return res.status(404).json({ message: 'No state found with the provided ID.' });
         }
-
     } catch (error) {
-        console.log("error deleting state", error)
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.log("Error deleting state:", error)
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-})
+});
+
 
 router.put('/updateState', async (req, res) => {
 

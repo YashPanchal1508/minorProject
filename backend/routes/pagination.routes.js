@@ -65,29 +65,28 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
     
     switch (tableName) {
         case 'country':
-             params = [`%${search}%`, intCode, limit, offSet]    
+             params = [`%${search}%`, intCode]    
              return await pool.query(
                 `SELECT * FROM ${tableName} WHERE isdeleted = false
                  AND countryname ILIKE $1 OR countrycode ILIKE $1 OR phonecode = $2
-                 LIMIT $3 OFFSET $4`,
+                `,
                 params
              );
         case 'state':
-             params = [`%${search}%`, limit,offSet]   
+             params = [`%${search}%`]   
              return await pool.query(
-              `SELECT s.*, c.countryname  FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.isdeleted = false AND (s.statename ILIKE $1 OR c.countryname ILIKE $1) ORDER BY s.statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'} LIMIT $2 OFFSET $3`,
+              `SELECT s.*, c.countryname  FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.isdeleted = false AND (s.statename ILIKE $1 OR c.countryname ILIKE $1) ORDER BY s.statename ${sortOrder === 'ASC' ? 'ASC' : 'DESC'}`,
                 params
              );
         case 'city':
-             params = [`%${search}%`,limit,offSet];
+             params = [`%${search}%`];
              return await pool.query(
                 `SELECT city.*, state.statename, country.countryname 
                 FROM city
                 JOIN state ON city.stateid = state.stateid
                 JOIN country ON city.countryid = country.countryid
                 WHERE city.isdeleted = false
-                AND ( country.countryname ILIKE $1 OR state.statename ILIKE $1 OR city.cityname ILIKE $1 )
-                LIMIT $2 OFFSET $3`,
+                AND ( country.countryname ILIKE $1 OR state.statename ILIKE $1 OR city.cityname ILIKE $1 )`,
                 params
              );
         default:

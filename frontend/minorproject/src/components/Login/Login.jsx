@@ -20,42 +20,45 @@ const Login = () => {
     }));
   };
 
+
   useEffect(() => {
     const authToken = localStorage.getItem('authToken');
     if (authToken) {
       // Redirect to home page if a valid token is found
       history('/home');
     }
-  }, [history]);
+  }, [history])
+  
+  
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await fetch('http://localhost:8000/api/user/loginUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({userName : credentials.userName, password: credentials.password}),
+        body: JSON.stringify({ userName: credentials.userName, password: credentials.password }),
       });
-
-      if(!response.ok){
+  
+      if (!response.ok) {
         const errorMessage = await response.json();
         toast.error(errorMessage)
-      } 
-
+        return;
+      }
+  
       const data = await response.json();
-
-      // console.log(data)
-
+  
       if (response.ok) {
-        // Login successful
         toast.success('User logged in successfully');
-        localStorage.setItem('authToken', data.authToken);
-        // Redirect to home page after successful login
-        history('/home');
+      
+      localStorage.setItem('authToken', data.authToken);
+      localStorage.setItem('expiresAt',Date.now());
+      // Redirect to home page after successful login
+      history('/home');
       } else {
         // Login failed
         toast.error(data.error);
@@ -64,6 +67,7 @@ const Login = () => {
       toast.error('Failed to login. Please try again later.');
     }
   };
+  
 
   return (
     <>
@@ -107,14 +111,7 @@ const Login = () => {
                 >
                   Password
                 </label>
-                <div className="text-sm">
-                  <Link
-                    href="#"
-                    className="font-semibold text-black hover:text-white"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+
               </div>
               <div className="mt-2">
                 <input

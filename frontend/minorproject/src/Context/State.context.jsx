@@ -63,7 +63,6 @@ const StateProvider = ({ children }) => {
       const duplicateData = await checkDuplicateState.json();
       console.log(duplicateData)
       if (duplicateData.isDuplicate === true) {
-        console.log("sasdsd")
         toast.success("State is Already Exists")
         return null
       }
@@ -85,7 +84,10 @@ const StateProvider = ({ children }) => {
 
       if (result.message === 'State added successfully') {
         toast.success("State Successfully Added")
-      } else {
+      }else if(result.updateMessage === 'State Updated'){
+        toast.success("State Successfully Added")
+      }   
+       else {
         toast.error("Error Adding State")
       }
     } catch (error) {
@@ -112,7 +114,10 @@ const StateProvider = ({ children }) => {
       // console.log(result)
       // dispatch(deleteStateData(result));
       toast.success("State Deleted Successfully");
-    } else {
+    } else if(result.message === 'Cannot delete state as it is associated with cities.'){
+        toast.error("Cannot delete state as it is associated with cities.")
+    }   
+    else {
       toast.error("Error Deleting State");
     }
   }

@@ -560,6 +560,7 @@ import Paper from '@mui/material/Paper';
 import TablePagination from '@mui/material/TablePagination';
 import { IconButton } from '@mui/material';
 import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 function Country() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -586,6 +587,28 @@ function Country() {
     count
   } = useCountryContext();
 
+  const navigate = useNavigate()
+
+  useEffect(()=> {  
+    const intervalId = setInterval(()=> {
+
+      const expiresAt = localStorage.getItem('expiresAt');
+  
+      if(expiresAt){
+        const currentTime = Date.now()
+        const expiriationTime = parseInt(expiresAt, 10) + 30 * 60 * 1000 ;
+        if(currentTime > expiriationTime){
+        localStorage.removeItem('authToken')
+          localStorage.removeItem('expiresAt')
+          navigate('/login')
+        }
+      }
+    }, 10000)
+
+      return  () => clearInterval(intervalId);
+
+    }, [navigate])
+
 
   useEffect(() => {
     fetchCountries(page + 1, rowsPerPage,sortOrder,columnName);
@@ -598,16 +621,16 @@ function Country() {
   const confirmDelete = async () => {
     try {
       await deleteCountries(deleteConfirmation);
-      toast.success('Country deleted successfully!');
       if (countries.length === 1 && totalPage > 1) {
         const newPage = currentPage > 1 ? currentPage - 1 : 1;
         setCurrentPage(newPage);
         setPage(newPage - 1);
         fetchCountries(newPage,rowsPerPage,sortOrder,columnName)
       }else{
-        fetchCountries(currentPage,rowsPerPage,sortOrder,columnName);
+        fetchCountries(1,rowsPerPage,sortOrder,columnName);
       }
       setDeleteConfirmation(null);
+      setSearchResults(false)
     } catch (error) {
       console.error('Error deleting country:', error);
     }
@@ -751,7 +774,7 @@ function Country() {
         </div>
 
         <div className="flex justify-center items-center min-h-[calc(100vh-24rem)] relative flex-grow w-[100%] overflow-y-visible">
-          <TableContainer component={Paper} style={{ maxHeight: rowsPerPage > 5 || rowsPerPage === -1 ? '400px' : 'none', overflowY: 'auto' }}>
+          <TableContainer component={Paper} style={{ maxHeight: rowsPerPage > 5 || rowsPerPage === -1 ? '400px' : '374px', overflowY: 'auto' }}>
             <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
               <TableHead style={{ position: 'sticky', top: 0, background: '#fff' }}>
                 <TableRow>

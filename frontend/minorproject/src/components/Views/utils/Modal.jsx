@@ -78,8 +78,11 @@ const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
     onClose();
   };
 
-  const handleCloseCancle =() => {
-      setFormData(initialData)
+  const handleCloseCancle = () => {
+    if (selectedCountry && Mode === 'edit') {
+      onClose();
+    }
+    setFormData(initialData);
   }
 
   return (
@@ -126,8 +129,8 @@ const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleCloseCancle} color="primary">
-          Cancel
+        <Button onClick={ handleCloseCancle} color="primary">
+        {selectedCountry ? 'Cancel' : 'Cancel'}
         </Button>
         <Button onClick={handleSave} color="primary">
           {selectedCountry ? 'Update' : 'Save'}

@@ -86,11 +86,12 @@ router.post('/loginUser', async (req, res) => {
                     users : {
                         name : userName,
                         password : password,
-                        expiresIn: '24h'
                     }
                 }
                 
                 const authToken = jwt.sign(data, JWT_SECRET);
+
+
                                 
                 res.status(200).json({message: "User Login SuccessFully", result: user , authToken})
 

@@ -12,6 +12,7 @@ import { useStateContext } from '../../../Context/State.context'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material';
 import { toast } from 'react-toastify';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -26,8 +27,29 @@ const State = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [columnName, setColumnName] = useState('')
   const [errors, setErrors] = useState({});
-  
 
+  const navigate = useNavigate()
+
+  useEffect(()=> {  
+    const intervalId = setInterval(()=> {
+
+      const expiresAt = localStorage.getItem('expiresAt');
+  
+      if(expiresAt){
+        const currentTime = Date.now()
+        const expiriationTime = parseInt(expiresAt, 10) + 30 * 60 * 1000 ;
+  
+        if(currentTime > expiriationTime){
+          localStorage.removeItem('authToken')
+          localStorage.removeItem('expiresAt')
+          navigate('/login')
+        }
+      }
+    }, 10000)
+
+      return  () => clearInterval(intervalId);
+
+    }, [navigate])
 
 
   useEffect(() => {
@@ -133,11 +155,15 @@ const State = () => {
       // Close the modal or perform other necessary actions
       dispatch(closeModal());
       dispatch(clearEditState());
+      setStateName('')
     }
     
   };
 
   const handleCancel = () => {
+    if(editState) {
+      dispatch(closeModal())
+    }
     dispatch(clearEditState());
     // dispatch(closeModal());
     setStateName('')
@@ -165,15 +191,15 @@ const State = () => {
 
   const confirmDelete = async() => {
           await deleteState(deleteConfirmation);
-          getState(pagination.currentPage, pagination.rowsPerPage,sortOrder,columnName)
+          await getState(1, pagination.rowsPerPage,sortOrder,columnName)
           setDeleteConfirmation(null)
   }
-
+  let searchData;
   const handleSearchChange =  (e) => {
     const state = 'state';
     const query = e.target.value;
 
-    let searchData;
+ 
 
     searchData = {
       search : query,
@@ -262,7 +288,7 @@ const State = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCancel} color="primary">
-              Cancel
+              {editState ? 'Cancel' : 'cancel'}
             </Button>
             <Button onClick={handleSave} color="primary">
               Save
@@ -273,8 +299,8 @@ const State = () => {
       </div>
 
      
-      <TableContainer component={Paper} style={{ maxHeight: pagination.rowsPerPage > 5 || pagination.rowsPerPage === -1 ? '400px' : 'none', overflowY: 'auto' }}>
-        <Table sx={{ minWidth: 500 }}>
+      <TableContainer component={Paper}  style={{ maxHeight: pagination.rowsPerPage > 5  || pagination.rowsPerPage === -1 ? '400px' : '375px', overflowY: 'auto' }}>
+        <Table sx={{ minWidth: 500 }} >
           <TableHead className="sticky top-0 bg-white">
             <TableRow>
               <TableCell className='text-center'>State ID</TableCell>

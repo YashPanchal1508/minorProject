@@ -77,6 +77,11 @@ const CountryProvider = ({ children }) => {
 
       const data = await response.json();
       setCountries(data);
+      if(data.message === 'Cannot delete country as it is associated with states.'){
+        toast.error("Can't Delete Country This country has been linked with a state!");
+      }else if(data.message === 'Country deleted successfully.'){
+        toast.success("Country deleted successfully.")
+      }
     } catch (error) {
       console.error('Error fetching countries:', error.message);
     }

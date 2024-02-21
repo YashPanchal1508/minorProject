@@ -74,26 +74,31 @@ router.post('/createCountry', async (req, res) => {
 
 
 
-router.delete('/deleteCountry/:id', async(req,res) => {
+router.delete('/deleteCountry/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+      // Check if the country is associated with any state
+      const stateCheck = await pool.query('SELECT * FROM state WHERE countryid = $1 AND isdeleted = false', [id]);
 
-    const id = req.params.id;
-    try {
+      if (stateCheck.rows.length > 0) {
+          // If the country is associated with states, return a message indicating the association
+          return res.status(400).json({ message: 'Cannot delete country as it is associated with states.' });
+      }
 
-        const result = await pool.query('UPDATE country SET isdeleted = true WHERE countryid = $1 RETURNING *', [id])
+      // If the country is not associated with any states, proceed with deletion
+      const result = await pool.query('UPDATE country SET isdeleted = true WHERE countryid = $1 RETURNING *', [id])
 
-        if(result.rowCount > 0){
-            res.status(200).json({message : `country with ID ${id} deleted successfully.`, result: result.rows})
-        }else{
-            res.status(404).json({message: 'No user found'})
-        }
+      if (result.rowCount > 0) {
+          return res.status(200).json({ message: `Country deleted successfully.`, result: result.rows });
+      } else {
+          return res.status(404).json({ message: 'No country found with the provided ID.' });
+      }
+  } catch (error) {
+      console.log("Error deleting country:", error)
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
-
-
-    } catch (error) {
-        console.log("error deleting user", error)
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-})
 
 
 router.put('/updateCountry', async(req,res) => {

@@ -4,30 +4,56 @@ const router = express.Router();
 
 router.post('/addCity', async (req, res) => {
     const { cityName, countryId, stateId } = req.body;
-
     try {
-
         const countryResult = await pool.query('SELECT * FROM country WHERE countryid = $1', [countryId]);
         const stateResult = await pool.query('SELECT * FROM state WHERE stateid = $1', [stateId]);
 
         if (countryResult.rows.length === 0 || stateResult.rows.length === 0) {
             return res.status(404).json({ error: 'Country or state not found.' });
         }
+
+        // Check if the city already exists
+        const existingCity = await pool.query('SELECT * FROM city WHERE cityname = $1', [cityName]);
         
+        if (existingCity.rows.length > 0) {
+            // City already exists
+            const city = existingCity.rows[0];
+            if (city.isdeleted) {
+                // If city is marked as deleted, update its isdeleted flag to false
+                const updateResult = await pool.query(
+                    'UPDATE city SET countryid =$1, stateid = $2, isdeleted = false WHERE cityid = $3',
+                    [countryId, stateId, city.cityid]
+                );
+                if (updateResult.rowCount === 1) {
+                    return res.status(200).json({ message: 'City already exists and has been activated.' });
+                } else {
+                    return res.status(500).json({ error: 'Failed to activate city.' });
+                }
+            } else {
+                // If city exists and is not deleted, return conflict status
+                return res.status(409).json({ error: 'City already exists.' });
+            }
+        }
+
+        // If city doesn't exist, insert a new city
         const cityResult = await pool.query(
             'INSERT INTO city (countryid, stateid, cityname) VALUES ($1, $2, LOWER($3)) RETURNING *',
             [countryId, stateId, cityName]
-        )
+        );
 
         if (cityResult) {
-            res.status(200).json({ message: "City Added successfully", city: cityResult.rows[0] })
+            return res.status(200).json({ message: 'City Added successfully', city: cityResult.rows[0] });
         } else {
             console.error('Error adding city');
+            return res.status(500).json({ error: 'Failed to add city.' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error adding city:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-})
+});
+
+
 
 router.delete('/removeCity', async (req, res) => {
     const { cityId } = req.body;

@@ -68,38 +68,41 @@ const CityProvider = ({ children }) => {
     }
 
     const addCity = async (countryId, stateId, cityName) => {
-       try {
-
-        const checkDuplicateCity = await fetch(`http://localhost:8000/api/city/checkDuplicateCity`, {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cityName })
-          });
+        try {
+            const checkDuplicateCity = await fetch(`http://localhost:8000/api/city/checkDuplicateCity`, {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cityName })
+            });
     
-          const duplicateData = await checkDuplicateCity.json();
-          if (duplicateData.isDuplicate === true) {
-            toast.success("City is Already Exists")
-            return null
-          }
-         const response = await fetch('http://localhost:8000/api/city/addCity', {
-             method: 'POST',
-             headers: {
-                 'Content-Type': 'application/json'
-             },
-             body: JSON.stringify({countryId, stateId, cityName})
-         })
- 
-         const result = await response.json();
- 
-         if(result.message === 'City Added successfully'){
-             toast.success("City Added successfully")
-         }else{
-             toast.error("Error Adding City")
-         }
-       } catch (error) {
-            console.log(error)
-       }    
+            const duplicateData = await checkDuplicateCity.json();
+            if (duplicateData.isDuplicate === true) {
+                toast.success("City is Already Exists");
+                return null;
+            }
+    
+            const response = await fetch('http://localhost:8000/api/city/addCity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ countryId, stateId, cityName })
+            });
+    
+            const result = await response.json();
+    
+            if (result.message === 'City Added successfully') {
+                toast.success("City Added successfully");
+            } else if(result.message === 'City already exists and has been activated.'){
+                toast.success("City Added successfully");
+            }else {
+                toast.error("Error Adding City");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
+    
 
     const updateCity = async(countryId, stateId, cityName, cityId) => {
 

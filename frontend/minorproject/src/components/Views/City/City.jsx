@@ -11,6 +11,7 @@ import { useCityContext } from '../../../Context/city.context';
 import { setRowsPerPage, setCurrentPage, openModal, closeModal, clearEditState, setSelectedCountry, setSelectedState, setEditState,} from '../../../redux/CitySlice';
 import { toast } from 'react-toastify';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
 
 const City = () => {
   const dispatch = useDispatch();
@@ -29,6 +30,33 @@ const City = () => {
   const { data: states, pagination, isOpen, countries, editState, selectedCountry, stateData, selectedState } = useSelector((state) => state.city);
 
   const { getCity, getAllCountries, getAllStates,addCity,updateCity,deleteCity,filterData,sort} = useCityContext()
+
+  const navigate = useNavigate()
+
+  useEffect(()=> {  
+    const intervalId = setInterval(()=> {
+
+      const expiresAt = localStorage.getItem('expiresAt');
+  
+      if(expiresAt){
+        console.log("Hii")
+        const currentTime = Date.now()
+        const expiriationTime = parseInt(expiresAt, 10) + 30 * 60 * 1000 ;
+  
+        if(currentTime > expiriationTime){
+          console.log('yash')
+        const removeItem = localStorage.removeItem('authToken')
+          localStorage.removeItem('expiresAt')
+         console.log(removeItem)
+          navigate('/login')
+        }
+      }
+    }, 10000)
+
+      return  () => clearInterval(intervalId);
+
+    }, [navigate])
+
 
   useEffect(() => {
     getCity(1, 5, sortOrder, column)
@@ -141,6 +169,10 @@ const City = () => {
 
 
   const handleCancel = () => {
+
+    if(editState) {
+        dispatch(closeModal())
+    }
     dispatch(clearEditState());
     setCityName('')
     setStateName('')
@@ -183,6 +215,7 @@ const City = () => {
       }
         // dispatch(addCityData(cityName, selectedCountry, stateName))
         getCity(pagination.currentPage, pagination.rowsPerPage,sortOrder,column)
+        setStateName('')
         dispatch(closeModal())
     }
     } catch (error) {
@@ -211,11 +244,12 @@ const City = () => {
 
 const confirmDelete = async() => {
   await deleteCity(deleteConfirmation);
-  getCity(pagination.currentPage, pagination.rowsPerPage,sortOrder,column)
+  await getCity(1, pagination.rowsPerPage,sortOrder,column)
   setDeleteConfirmation(null)
 }
 
 const handleClose =() => {
+    setStateName('')
     dispatch(closeModal())
 }
 
@@ -301,7 +335,7 @@ const handleSort = async(columnName) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCancel} color="primary">
-              Cancel
+              { editState ? "cancel" : "cancel"}
             </Button>
             <Button onClick={handleSave} color="primary">
               Save
@@ -314,7 +348,7 @@ const handleSort = async(columnName) => {
       {/* Add City Modal, Search Input, and other components similar to State component */}
       <div className='mt-3'>
 
-      <TableContainer component={Paper}  style={{ maxHeight: pagination.rowsPerPage > 5 || pagination.rowsPerPage === -1 ? '400px' : 'none', overflowY: 'auto' }}>
+      <TableContainer component={Paper}  style={{ maxHeight: pagination.rowsPerPage > 5 || pagination.rowsPerPage === -1 ? '400px' : '375px', overflowY: 'auto' }}>
         <Table>
           <TableHead className='sticky top-0 bg-white'>
             <TableRow>
