@@ -13,33 +13,38 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Te
 import { toast } from 'react-toastify';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
-
+import { SearchIcon } from '@heroicons/react/outline';
 
 
 
 const State = () => {
   const dispatch = useDispatch();
-  const { getState, getAllCountries, addState, deleteState,filterData,updateState, sort } = useStateContext()
-  const { data: states, pagination, isOpen, countries, editState, selectedCountry} = useSelector((state) => state.state);
+  const { getState, getAllCountries, addState, deleteState, filterData, updateState, sort } = useStateContext()
+  const { data: states, pagination, isOpen, countries, editState, selectedCountry } = useSelector((state) => state.state);
   const [stateName, setStateName] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
-  const [searchResults, setSearchResults] = useState(false);
+  const [searchResults, setSearchResults] = useState(null);
   const [sortOrder, setSortOrder] = useState('asc');
   const [columnName, setColumnName] = useState('')
   const [errors, setErrors] = useState({});
-
+  const [isHovered, setIsHovered] = useState({
+    countryname: false,
+    statename: false,
+  
+  });
+  
   const navigate = useNavigate()
 
-  useEffect(()=> {  
-    const intervalId = setInterval(()=> {
+  useEffect(() => {
+    const intervalId = setInterval(() => {
 
       const expiresAt = localStorage.getItem('expiresAt');
-  
-      if(expiresAt){
+
+      if (expiresAt) {
         const currentTime = Date.now()
-        const expiriationTime = parseInt(expiresAt, 10) + 30 * 60 * 1000 ;
-  
-        if(currentTime > expiriationTime){
+        const expiriationTime = parseInt(expiresAt, 10) + 30 * 60 * 1000;
+
+        if (currentTime > expiriationTime) {
           localStorage.removeItem('authToken')
           localStorage.removeItem('expiresAt')
           navigate('/login')
@@ -47,14 +52,15 @@ const State = () => {
       }
     }, 10000)
 
-      return  () => clearInterval(intervalId);
+    return () => clearInterval(intervalId);
 
-    }, [navigate])
+  }, [navigate])
+
 
 
   useEffect(() => {
-    getState(1, 5,sortOrder,columnName)
-  }, [sortOrder,columnName])
+    getState(1, 5, sortOrder, columnName)
+  }, [sortOrder, columnName])
 
   useEffect(() => {
     getAllCountries();
@@ -74,24 +80,24 @@ const State = () => {
 
   const validateForm = () => {
     const newErrors = {};
-     
-    if(!stateName.match(/^[A-Za-z]{1,10}$/)){
-      newErrors.stateName = 'State name should contain only alphabets (max 10 characters)';
+
+    if (!stateName.match(/^[A-Za-z]{1,50}$/)) {
+      newErrors.stateName = 'State name should contain only alphabets (max 50 characters)';
     }
-    if(stateName.length === 0){
-     newErrors.stateName = 'State name should not blank'
+    if (stateName.length === 0) {
+      newErrors.stateName = 'State name should not blank'
     }
 
-     if(!selectedCountry){
+    if (!selectedCountry) {
       newErrors.selectedCountry = 'Pls select country name';
-     }
+    }
 
-     setErrors(newErrors);
+    setErrors(newErrors);
 
-     return Object.keys(newErrors).length === 0;
-   }
+    return Object.keys(newErrors).length === 0;
+  }
 
-  const handleDelete =(stateId) => {
+  const handleDelete = (stateId) => {
 
     setDeleteConfirmation(stateId)
 
@@ -99,38 +105,39 @@ const State = () => {
 
   const handleChangePage = (event, newPage) => {
     dispatch(setCurrentPage(newPage + 1));
-    getState(newPage + 1, pagination.rowsPerPage,sortOrder,columnName);
+    getState(newPage + 1, pagination.rowsPerPage, sortOrder, columnName);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     dispatch(setRowsPerPage(newRowsPerPage));
-    getState(1, newRowsPerPage,sortOrder,columnName);
+    getState(1, newRowsPerPage, sortOrder, columnName);
   };
 
   const handleFirstPageButtonClick = () => {
     dispatch(setCurrentPage(1));
-    getState(1, pagination.rowsPerPage,sortOrder,columnName);
+    getState(1, pagination.rowsPerPage, sortOrder, columnName);
   }
 
   const handleBackButtonClick = () => {
     const newPage = Math.max(1, pagination.currentPage - 1);
     dispatch(setCurrentPage(newPage));
-    getState(newPage, pagination.rowsPerPage,sortOrder,columnName);
+    getState(newPage, pagination.rowsPerPage, sortOrder, columnName);
   }
 
   const handleNextButtonClick = () => {
     const newPage = Math.min(pagination.totalPages, pagination.currentPage + 1);
     dispatch(setCurrentPage(newPage));
-    getState(newPage, pagination.rowsPerPage,sortOrder,columnName);
+    getState(newPage, pagination.rowsPerPage, sortOrder, columnName);
   }
 
   const handleLastPageButtonClick = () => {
     dispatch(setCurrentPage(pagination.totalPages));
-    getState(pagination.totalPages, pagination.rowsPerPage,sortOrder,columnName);
+    getState(pagination.totalPages, pagination.rowsPerPage, sortOrder, columnName);
   }
 
   const handleOpenModal = () => {
+    setErrors({})
     dispatch(openModal());
     dispatch(clearEditState())
     dispatch(setSelectedCountry(''));
@@ -142,26 +149,24 @@ const State = () => {
 
     // Check if the form is valid
     if (isValid) {
-        if(editState){
-          await updateState( stateName, selectedCountry, editState.stateid);
-          toast.success("State Updated Successfully")
-        }
-        else{
-          await addState(stateName, selectedCountry); 
-          // Update the Redux store with the new state data
-          dispatch(addStateData({ stateName, countryId: selectedCountry }));
-        }
-      getState(pagination.currentPage, pagination.rowsPerPage,sortOrder,columnName)
-      // Close the modal or perform other necessary actions
+      if (editState) {
+        await updateState(stateName, selectedCountry, editState.stateid);
+        toast.success("State Updated Successfully")
+      }
+      else {
+        await addState(stateName, selectedCountry, pagination.currentPage, pagination.rowsPerPage);
+        // Update the Redux store with the new state data
+      }
       dispatch(closeModal());
+      // getState(pagination.currentPage, pagination.rowsPerPage,sortOrder,columnName) 
       dispatch(clearEditState());
       setStateName('')
     }
-    
+
   };
 
   const handleCancel = () => {
-    if(editState) {
+    if (editState) {
       dispatch(closeModal())
     }
     dispatch(clearEditState());
@@ -186,82 +191,105 @@ const State = () => {
   }
 
   const cancelDelete = () => {
-      setDeleteConfirmation(null)
+    setDeleteConfirmation(null)
   }
 
-  const confirmDelete = async() => {
-          await deleteState(deleteConfirmation);
-          await getState(1, pagination.rowsPerPage,sortOrder,columnName)
-          setDeleteConfirmation(null)
+  const confirmDelete = async () => {
+    await deleteState(deleteConfirmation, pagination.currentPage, pagination.rowsPerPage);
+    if (countries.length === 1 && pagination.totalPage > 1) {
+      const newPage = pagination.currentPage > 1 ? pagination.currentPage - 1 : 1;
+      setCurrentPage(newPage);
+    }
+    // await getState(1, pagination.rowsPerPage,sortOrder,columnName)
+    setDeleteConfirmation(null)
+    setSearchResults('')
   }
   let searchData;
-  const handleSearchChange =  (e) => {
+  const handleSearchChange = (e) => {
     const state = 'state';
     const query = e.target.value;
+    setSearchResults(query)
 
- 
 
     searchData = {
-      search : query,
-      limit : pagination.rowsPerPage,
+      search: query,
+      limit: pagination.rowsPerPage,
       page: 1
     }
 
-    if(searchData.search === ''){
-      getState(1, pagination.rowsPerPage,sortOrder,columnName)
-      setSearchResults(false)
-    }else{
-      setSearchResults(true)
+    if (searchData.search === '') {
+      getState(1, pagination.rowsPerPage, sortOrder, columnName)
+    } else {
       filterData(state, searchData)
     }
 
   }
 
- const  handleSort = async(columnName) => {
-  setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
-  setColumnName(columnName);
-  await sort('state', pagination.currentPage, pagination.rowsPerPage, columnName, sortOrder)
- }
+  const handleSort = async (columnName) => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    setColumnName(columnName);
+    await sort('state', pagination.currentPage, pagination.rowsPerPage, columnName, sortOrder)
+  }
 
- const handleClose =() => {
-      dispatch(closeModal())
- }
+  const handleClose = () => {
+    dispatch(closeModal())
+  }
 
+  const handleHover = (columnName, isHovering) => {
+    setIsHovered({ [columnName]: isHovering });
+  };
 
 
   return (
-    <div>
-      <div className="mb-3">
-        <div className="w-[100%] flex justify-between">
-          <div className="input-group w-[300px] gap-2">
+    <div className='w-3/4'>
+      <div className="mb-4 ">
+        <div className="w-[100%] flex justify-between ">
+          <div className="input-group w-[300px]">
             <input
               type="search"
-              className="form-control rounded border-black-400 bg-transparent"
+              className="form-control rounded border border-black bg-transparent pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
               placeholder="Search"
               aria-label="Search"
-              aria-describedby="search-addon"
+              value={searchResults}
               onChange={handleSearchChange}
             />
+
+            <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <SearchIcon className="h-[16px] w-5 text-black" />
+            </span>
+
+
           </div>
-          <button
+          {/* <button
             type="button"
             className="btn btn-light"
             onClick={() => handleOpenModal()}
           >
             Add State
+          </button> */}
+          <button
+            type="button"
+            className="inline-block px-4 py-2 text-sm font-bold leading-5 text-white transition-colors duration-150 bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+            onClick={() => handleOpenModal()}
+          >
+            Add State
           </button>
+
+
+
+
         </div>
 
-        <Dialog open={isOpen} onClose={handleCancel}>
+        <Dialog open={isOpen} onClose={handleCancel} maxWidth="md" fullWidth={false}>
           <DialogTitle className='flex justify-between'>{editState ? 'Edit State' : 'Add State'}
-          <IconButton aria-label="close" onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
+            <IconButton aria-label="close" onClick={handleClose}>
+              <CloseIcon />
+            </IconButton>
           </DialogTitle>
-          <DialogContent>
+          <DialogContent style={{ overflow: 'auto', maxHeight: '60vh', width: '400px' }}>
             <TextField
               select
-              label="Select Option"
+              label="Select Country"
               value={selectedCountry}
               onChange={handleCountryChange}
               fullWidth
@@ -269,6 +297,16 @@ const State = () => {
               error={!!errors.selectedCountry}
               helperText={errors.selectedCountry}
               // disabled={editState ? true : false}
+              SelectProps={{
+                MenuProps: {
+                  PaperProps: {
+                    style: {
+                      maxHeight: 130,
+                      width: 250,
+                    },
+                  },
+                },
+              }}
             >
               {countries.map((country) => (
                 <MenuItem key={country.countryid} value={country.countryid}>
@@ -298,91 +336,118 @@ const State = () => {
 
       </div>
 
-     
-      <TableContainer component={Paper}  style={{ maxHeight: pagination.rowsPerPage > 5  || pagination.rowsPerPage === -1 ? '400px' : '375px', overflowY: 'auto' }}>
-        <Table sx={{ minWidth: 500 }} >
-          <TableHead className="sticky top-0 bg-white">
-            <TableRow>
-              <TableCell className='text-center'>State ID</TableCell>
-              <TableCell className='cursor-pointer text-center' onClick={() => handleSort('countryname')}>Country Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
-              <TableCell className='cursor-pointer text-center' onClick={() => handleSort('statename')}>State Name  {sortOrder === 'asc' ? '▼' : '▲'}</TableCell>
-              <TableCell className='text-center'>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          {states.length > 0 ? (
-              states.map((state) => (
-                <TableRow key={state.stateid} className='text-center'>
-                  <TableCell className='text-center'>{state.stateid}</TableCell>
-                  <TableCell className='text-center'>{state.countryname}</TableCell>
-                  <TableCell className='text-center'>{state.statename}</TableCell>
-                  <TableCell>
-                    <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(state)}>Edit</button>
-                    <button className="text-red-500 hover:underline font-bold" onClick={() => handleDelete(state.stateid)}>Delete</button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
+      <div style={{ boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.5)' }}>
+
+        <TableContainer component={Paper} style={{ maxHeight: pagination.rowsPerPage > 5 || pagination.rowsPerPage === -1 ? '400px' : '406px', overflowY: 'auto' }}>
+          <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
+            <TableHead className="sticky top-0 bg-white">
               <TableRow>
-                <TableCell colSpan={4} align="center">No data found</TableCell>
+                <TableCell className='text-center'>State ID</TableCell>
+                <TableCell
+                  className='cursor-pointer text-center'
+                  onClick={() => handleSort('countryname')}
+                  onMouseEnter={() => handleHover('countryname', true)}
+                    onMouseLeave={() => handleHover('countryname', false)}
+                >
+                 <span className="mr-1"> Country Name  </span> 
+                 <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
+                      {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
+                    </div>
+                </TableCell>
+                <TableCell
+                  className='cursor-pointer text-center'
+                  onClick={() => handleSort('statename')}
+                  onMouseEnter={() => handleHover('statename', true)}
+                  onMouseLeave={() => handleHover('statename', false)}
+                >
+                <span className="mr-1"> State Name</span> 
+                <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.statename ? 'opacity-100' : 'opacity-0'}`}>
+                      {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
+                    </div>
+                </TableCell>
+                <TableCell className='text-center'>Action</TableCell>
               </TableRow>
+            </TableHead>
+            <TableBody>
+              {states.length > 0 ? (
+                states.map((state) => (
+                  <TableRow key={state.stateid} className='text-center hover:bg-gray-100'>
+                    <TableCell className='text-center'>{state.stateid}</TableCell>
+                    <TableCell className='text-center'>{state.countryname}</TableCell>
+                    <TableCell className='text-center'>{state.statename}</TableCell>
+                    <TableCell className='text-center '>
+                      <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(state)}>
+                        <img src="public\asset\icons8-edit-24.png" alt="EditButton" className='h-5' />
+                      </button>
+                      <button className="text-red-500 hover:underline font-bold" onClick={() => handleDelete(state.stateid)}>
+                        <img src="public\asset\icons8-trash-30.png" alt="DeleteButton" className='h-5' />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">No data found</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+
+          </Table>
+          <div className="sticky bottom-0 bg-white z-10">
+            {!searchResults && (
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={Number.isNaN(pagination.finalTotal) ? 0 : Number(pagination.finalTotal)}
+                rowsPerPage={pagination.rowsPerPage}
+                page={pagination.currentPage - 1} // Adjusted to 0-based index
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                ActionsComponent={() => (
+                  <div style={{ flexShrink: 0, ml: 2.5 }} className="sticky bottom-0 bg-white z-10">
+                    <IconButton onClick={handleFirstPageButtonClick} disabled={pagination.currentPage === 1 || pagination.rowsPerPage === -1} aria-label="first page">
+                      <FirstPage />
+                    </IconButton>
+                    <IconButton onClick={handleBackButtonClick} disabled={pagination.currentPage === 1 || pagination.rowsPerPage === -1} aria-label="previous page">
+                      <KeyboardArrowLeft />
+                    </IconButton>
+                    <IconButton onClick={handleNextButtonClick} disabled={pagination.currentPage === pagination.totalPages || pagination.rowsPerPage === -1} aria-label="next page">
+                      <KeyboardArrowRight />
+                    </IconButton>
+                    <IconButton onClick={handleLastPageButtonClick} disabled={pagination.currentPage === pagination.totalPages || pagination.rowsPerPage === -1} aria-label="last page">
+                      <LastPage />
+                    </IconButton>
+                  </div>
+                )}
+              />
             )}
-          </TableBody>
-
-        </Table>
-        <div className="sticky bottom-0 bg-white z-10">
-  {!searchResults && (
-    <TablePagination
-      rowsPerPageOptions={[5, 10, 25]}
-      component="div"
-      count={Number.isNaN(pagination.finalTotal) ? 0 : Number(pagination.finalTotal)}
-      rowsPerPage={pagination.rowsPerPage}
-      page={pagination.currentPage - 1} // Adjusted to 0-based index
-      onPageChange={handleChangePage}
-      onRowsPerPageChange={handleChangeRowsPerPage}
-      ActionsComponent={() => (
-        <div style={{ flexShrink: 0, ml: 2.5 }}>
-          <IconButton onClick={handleFirstPageButtonClick} disabled={pagination.currentPage === 1 || pagination.rowsPerPage === -1} aria-label="first page">
-            <FirstPage />
-          </IconButton>
-          <IconButton onClick={handleBackButtonClick} disabled={pagination.currentPage === 1 || pagination.rowsPerPage === -1} aria-label="previous page">
-            <KeyboardArrowLeft />
-          </IconButton>
-          <IconButton onClick={handleNextButtonClick} disabled={pagination.currentPage === pagination.totalPages || pagination.rowsPerPage === -1} aria-label="next page">
-            <KeyboardArrowRight />
-          </IconButton>
-          <IconButton onClick={handleLastPageButtonClick} disabled={pagination.currentPage === pagination.totalPages || pagination.rowsPerPage === -1} aria-label="last page">
-            <LastPage />
-          </IconButton>
-        </div>
-      )}
-    />
-  )}
-</div>
-
-
-      </TableContainer>
-
-{   deleteConfirmation  &&   <div className="fixed inset-0 z-20 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black opacity-50 "></div>
-          <div className="bg-white p-8 rounded-md z-20">
-            <p>Are you sure you want to delete this state?</p>
-            <div className="mt-4 flex justify-end">
-              <button
-                className="mr-4 text-white bg-opacity-75 z-50 p-2 hover:bg-opacity-100 bg-blue-600 rounded-md"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-              <button
-                className="text-white bg-red-500 bg-opacity-75 z-50 p-2 hover:bg-opacity-100 rounded-md"
-                onClick={confirmDelete}
-              >
-                Delete
-              </button>
-            </div>
           </div>
-        </div>}
+
+
+        </TableContainer>
+      </div>
+
+
+      {deleteConfirmation && <div className="fixed inset-0 z-20 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black opacity-50 "></div>
+        <div className="bg-white p-8 rounded-md z-20">
+          <p>Are you sure you want to delete this state?</p>
+          <div className="mt-4 flex justify-end">
+            <button
+              className="mr-4 text-white bg-opacity-75 z-50 p-2 hover:bg-opacity-100 bg-blue-600 rounded-md"
+              onClick={cancelDelete}
+            >
+              Cancel
+            </button>
+            <button
+              className="text-white bg-red-500 bg-opacity-75 z-50 p-2 hover:bg-opacity-100 rounded-md"
+              onClick={confirmDelete}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>}
     </div>
   );
 };

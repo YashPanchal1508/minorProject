@@ -8,6 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import { IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { Container } from '@mui/material';
 
 const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
   const initialData = {
@@ -36,18 +37,18 @@ const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
     const newErrors = {};
 
     // Validate country name
-    if (!formData.countryName.match(/^[A-Za-z]{1,10}$/)) {
-      newErrors.countryName = 'Country name should contain only alphabets (max 10 characters)';
+    if (!formData.countryName.match(/^[A-Za-z]{1,50}$/)) {
+      newErrors.countryName = 'Country name should contain only alphabets (max 50 characters)';
     }
 
     // Validate country code
-    if (!formData.countryCode.match(/^[A-Za-z]{1,3}$/)) {
-      newErrors.countryCode = 'Country code should contain only alphabets (max 3 characters)';
+    if (!formData.countryCode.match(/^[A-Za-z]{1,2}$/)) {
+      newErrors.countryCode = 'Country code should contain only alphabets (max 2 characters)';
     }
 
     // Validate phone code
-    if (!formData.phoneCode.match(/^\d{1,3}$/)) {
-      newErrors.phoneCode = 'Phone code should contain only digits (max 3 digits)';
+    if (!formData.phoneCode.match(/^\d{1,4}$/)) {
+      newErrors.phoneCode = 'Phone code should contain only digits (max 4 digits)';
     }
 
     setErrors(newErrors);
@@ -86,57 +87,56 @@ const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
   }
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
-      <DialogTitle className='flex justify-between'>
-        {Mode === 'edit' ? 'Update Country' : 'Add Country'}
-        <IconButton aria-label="close" onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent>
-        <TextField
-          label="Country Name"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          name="countryName"
-          value={formData.countryName}
-          onChange={handleChange}
-          error={!!errors.countryName}
-          helperText={errors.countryName}
-        />
-        <TextField
-          label="Country Code"
-          variant="outlined"
-          fullWidth
-          name="countryCode"
-          margin="normal"
-          value={formData.countryCode}
-          onChange={handleChange}
-          error={!!errors.countryCode}
-          helperText={errors.countryCode}
-        />
-        <TextField
-          label="Phone Code"
-          variant="outlined"
-          fullWidth
-          name="phoneCode"
-          margin="normal"
-          value={formData.phoneCode}
-          onChange={handleChange}
-          error={!!errors.phoneCode}
-          helperText={errors.phoneCode}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={ handleCloseCancle} color="primary">
-        {selectedCountry ? 'Cancel' : 'Cancel'}
-        </Button>
-        <Button onClick={handleSave} color="primary">
-          {selectedCountry ? 'Update' : 'Save'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Dialog open={isOpen} onClose={handleClose} PaperProps={{ style: { width: '25%' } }}   >
+  <DialogTitle className='flex justify-between'>
+    {Mode === 'edit' ? 'Update Country' : 'Add Country'}
+    <IconButton aria-label="close" onClick={handleClose}>
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+  <DialogContent className='flex flex-col'>
+    <TextField
+      label="Country Name"
+      variant="outlined"
+      margin="normal"
+      name="countryName"
+      value={formData.countryName}
+      onChange={handleChange}
+      error={!!errors.countryName}
+      helperText={errors.countryName}
+    />
+    <TextField
+      label="Country Code"
+      variant="outlined"
+      name="countryCode"
+      margin="normal"
+      value={formData.countryCode}
+      onChange={handleChange}
+      error={!!errors.countryCode}
+      helperText={errors.countryCode}
+    />
+    <TextField
+      label="Phone Code"
+      variant="outlined"
+      name="phoneCode"
+      margin="normal"
+      value={formData.phoneCode}
+      onChange={handleChange}
+      error={!!errors.phoneCode}
+      helperText={errors.phoneCode}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCloseCancle} color="primary">
+    {selectedCountry ? 'Cancel' : 'Cancel'}
+    </Button>
+    <Button onClick={handleSave} color="primary">
+      {selectedCountry ? 'Update' : 'Save'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
   );
 };
 

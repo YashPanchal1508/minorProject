@@ -62,7 +62,12 @@ export const citySlice = createSlice({
             state.stateData = action.payload;
         },
         addCityData : (state,action) => {
-                state.data.push(action.payload)
+            console.log(action.payload)
+            const { fResult, pagination } = action.payload
+            state.data = fResult;
+            state.pagination.currentPage = pagination.currentPage;
+            state.pagination.totalPages = pagination.totalPages;
+            state.pagination.finalTotal = pagination.totalCount;
         },
         filterCity: (state,action) => {
             state.data = action.payload;
@@ -75,11 +80,31 @@ export const citySlice = createSlice({
             state.pagination.currentPage = currentPage;
             state.pagination.totalPages = totalPages;
             state.pagination.finalTotal = totalCount;
-        }   
-    }
+        },
+        updateCityData: (state,action) => {
+            const updateCity = action.payload
+            const cityId = updateCity.cityid; // Id of the updated state
+
+            // Find the index of the state to be updated
+            const cityIndex = state.data.findIndex(city => city.cityid === cityId);
+
+            if (cityIndex !== -1) {
+                // Update the state data at the found index
+                state.data[cityIndex] = updateCity;
+            }
+        } ,
+        deleteCityData: (state,action) => {
+            const {result, pagination} = action.payload
+            state.data = result;
+            state.pagination.currentPage = pagination.currentPage;
+            state.pagination.totalPages = pagination.totalPages;
+            state.pagination.finalTotal = pagination.totalCount;
+        }
+          
+    },
 })
 
 
-export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState,addCityData,filterCity,sortData} = citySlice.actions
+export const {setData,setCurrentPage,setRowsPerPage,openModal,closeModal,setCountries,setSelectedCountry,setEditState,clearEditState,setStates,setSelectedState,addCityData,filterCity,sortData,updateCityData,deleteCityData} = citySlice.actions
 
 export default citySlice.reducer;

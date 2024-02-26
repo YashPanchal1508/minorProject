@@ -41,7 +41,7 @@ router.post('/getCountry', async (req, res) => {
 
 
 router.post('/createCountry', async (req, res) => {
-  const { countryname, countrycode, phonecode } = req.body;
+  const { countryname, countrycode, phonecode,page,limit } = req.body;
 
   if (!countryname || !countrycode || !phonecode) {
     return res.status(400).send("Missing fields");
@@ -49,21 +49,37 @@ router.post('/createCountry', async (req, res) => {
 
   try {
     // Check if country name already exists
-    let result = await pool.query('SELECT * FROM country WHERE LOWER(countryname) = LOWER($1)', [countryname]);
+    let fresult = await pool.query('SELECT * FROM country WHERE LOWER(countryname) = LOWER($1)', [countryname]);
 
-    if (result.rowCount > 0) {
-      const existingCountry = result.rows[0];
+    if (fresult.rowCount > 0) {
+      const existingCountry = fresult.rows[0];
       if (existingCountry.isdeleted) {
         // Update existing country's isdeleted flag to false
-        const updatedQuery = await pool.query('UPDATE country SET isdeleted = false WHERE countryname = $1', [countryname]);
-        return res.status(200).json({ updateMessage: "Country Updated", rows: updatedQuery.rows });
+        const updatedQuery = await pool.query('UPDATE country SET isdeleted = false WHERE countryname = $1 RETURNING *', [existingCountry.countryname]);
+        return res.status(200).json({ updateMessage: "Country Updated", rows: updatedQuery.rows[0] });
       } else {
-        return res.status(400).json({ error: 'Country already exists' });
+        return res.status(400).json({ error: 'Country already exists'});
       }
     } else {
       // Country name does not exist, proceed with insertion
-      const finalResult = await pool.query('INSERT INTO country (countryname, countrycode, phonecode) VALUES (LOWER($1), LOWER($2), $3) RETURNING *', [countryname, countrycode, phonecode]);
-      return res.status(200).json({ updateMessage: "Country Added", rows: finalResult.rows });
+      const finalResult = await pool.query('INSERT INTO country (countryname, countrycode, phonecode) VALUES ($1, $2, $3) RETURNING *', [countryname, countrycode, phonecode]);
+      
+      const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
+      const totalCount = totalCountQuery.rows[0].count;
+
+      // Fetch paginated data of existing countries
+      const offset = (page - 1) * limit;
+      const allData = await pool.query('SELECT * FROM country WHERE isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
+
+      res.status(200).json({
+        result: allData.rows,
+        pagination: {
+          totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPage: page,
+        }
+      });
+
     }
   } catch (error) {
     console.error('Error creating/updating country:', error);
@@ -74,8 +90,10 @@ router.post('/createCountry', async (req, res) => {
 
 
 
+
 router.delete('/deleteCountry/:id', async (req, res) => {
   const id = req.params.id;
+  const {page,limit} = req.body
   try {
       // Check if the country is associated with any state
       const stateCheck = await pool.query('SELECT * FROM state WHERE countryid = $1 AND isdeleted = false', [id]);
@@ -87,9 +105,19 @@ router.delete('/deleteCountry/:id', async (req, res) => {
 
       // If the country is not associated with any states, proceed with deletion
       const result = await pool.query('UPDATE country SET isdeleted = true WHERE countryid = $1 RETURNING *', [id])
+      const offset = (page - 1) * limit;
+      
+            const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
+            const totalCount = totalCountQuery.rows[0].count;
+      const finalResult = await pool.query('select * from country where isdeleted = false limit $1 offset $2', [limit,offset])
 
+      // Fetch paginated data of existing countries
       if (result.rowCount > 0) {
-          return res.status(200).json({ message: `Country deleted successfully.`, result: result.rows });
+          return res.status(200).json({ message: `Country deleted successfully.`, finalResult: finalResult.rows,pagination:{
+            totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          currentPage: page,
+          } });
       } else {
           return res.status(404).json({ message: 'No country found with the provided ID.' });
       }
@@ -101,51 +129,68 @@ router.delete('/deleteCountry/:id', async (req, res) => {
 
 
 
-router.put('/updateCountry', async(req,res) => {
+router.put('/updateCountry', async (req, res) => {
+  const { id, countryName, countryCode, phoneCode} = req.body;
 
-    const {countryName, countryCode, phoneCode, id} = req.body;
-
-
-    try {
-        const result = await pool.query(
-          'UPDATE country SET countryname = LOWER($1), countrycode = LOWER  ($2), phonecode = $3 WHERE countryid = $4 RETURNING *',
-          [countryName, countryCode, phoneCode, id]
-        );
-      
-        if (result.rows.length === 0) {
-          return res.status(404).json({ error: 'Country not found.' });
-        }
-      
-        res.status(200).json({ message: 'Country successfully updated', country: result.rows[0] });
-      } catch (error) {
-        console.error('Error updating country:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-
-})
-
-router.post('/checkDuplicateCountry', async (req, res) => {
   try {
-    const { countryName } = req.body;
-
-    if (typeof countryName !== 'string') {
-      return res.status(400).json({ error: 'Invalid countryName provided' });
-    }
-
-    // Check for duplicate city name
-    const duplicateCity = await pool.query(
-      'SELECT COUNT(*) FROM country WHERE LOWER(countryname) = LOWER($1) AND isdeleted = false',
-      [countryName.toLowerCase()]
+    // Update country data in the database
+    const result = await pool.query(
+      'UPDATE country SET countryname = $1, countrycode = $2, phonecode = $3 WHERE countryid = $4 RETURNING *',
+      [countryName, countryCode, phoneCode, id]
     );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Country not found.' });
+    }
+
+    // Fetch the total count of countries
+    // const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
+    // const totalCount = totalCountQuery.rows[0].count;
+
+    // // Calculate the total number of pages based on the limit
+    // const totalPages = Math.ceil(totalCount / limit);
+
+    // // Calculate the offset based on the current page and limit
+    // const offset = (page - 1) * limit;
+
+    // // Fetch the data for the current page after the update
+    // const updatedData = await pool.query(
+    //   'SELECT * FROM country WHERE isdeleted = false ORDER BY countryid LIMIT $1 OFFSET $2',
+    //   [limit, offset]
+    // );
+
     res.status(200).json({
-      isDuplicate: duplicateCity.rows[0].count > 0, // Check the count in the first row
+      result: result.rows[0],
     });
   } catch (error) {
-    console.error('Error checking duplicate country name:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error updating country:', error.message);
+    res.status(500).json({ error: 'Internal server error.' });
   }
 });
+
+
+// router.post('/checkDuplicateCountry', async (req, res) => {
+//   try {
+//     const { countryName } = req.body;
+
+//     if (typeof countryName !== 'string') {
+//       return res.status(400).json({ error: 'Invalid countryName provided' });
+//     }
+
+//     // Check for duplicate city name
+//     const duplicateCity = await pool.query(
+//       'SELECT COUNT(*) FROM country WHERE LOWER(countryname) = LOWER($1) AND isdeleted = false',
+//       [countryName.toLowerCase()]
+//     );
+
+//     res.status(200).json({
+//       isDuplicate: duplicateCity.rows[0].count > 0, // Check the count in the first row
+//     });
+//   } catch (error) {
+//     console.error('Error checking duplicate country name:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
 
 
 module.exports = router

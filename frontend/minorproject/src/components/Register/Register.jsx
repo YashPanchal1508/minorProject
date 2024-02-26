@@ -30,6 +30,11 @@ const Register = () => {
         body: JSON.stringify({userName: formData.userName, password: formData.password, email: formData.email})
       });
 
+      if(!response.ok){
+        const errorMessage = await response.json()
+        toast.error(errorMessage.error)
+      }
+
       const data = await response.json();
 
       if (response.ok) {
@@ -42,7 +47,6 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Registration failed:', error);
-      toast.error('Failed to register. Please try again later.');
     }
   };
 

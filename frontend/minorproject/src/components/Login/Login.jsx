@@ -46,7 +46,7 @@ const Login = () => {
   
       if (!response.ok) {
         const errorMessage = await response.json();
-        toast.error(errorMessage)
+        toast.error(errorMessage.error)
         return;
       }
   

@@ -66,17 +66,24 @@ const CountryProvider = ({ children }) => {
 
 
   //to delete countries
-  const deleteCountries = async (id) => {
+  const deleteCountries = async (id,page,limit) => {
 
     try {
       const response = await fetch(`http://localhost:8000/api/country/deleteCountry/${id}`,
         {
           method: 'DELETE',
-        }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page,limit })
+        },
+         
       );
 
       const data = await response.json();
-      setCountries(data);
+      const {pagination,finalResult } = data
+      setCountries(finalResult);
+      setCurrentPage(pagination.currentPage);
+      setTotalPage(pagination.totalPages);
+      setCount(pagination.totalCount)
       if(data.message === 'Cannot delete country as it is associated with states.'){
         toast.error("Can't Delete Country This country has been linked with a state!");
       }else if(data.message === 'Country deleted successfully.'){
@@ -88,38 +95,48 @@ const CountryProvider = ({ children }) => {
   };
 
 
-  const addCountry = async (data) => {
+  const addCountry = async (data,page,limit) => {
     try {
 
-      const checkDuplicateCountry = await fetch(`http://localhost:8000/api/country/checkDuplicateCountry`,{
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ countryName: data.countryName })
-      });
+      // const checkDuplicateCountry = await fetch(`http://localhost:8000/api/country/checkDuplicateCountry`,{
+      //     method: "POST",
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ countryName: data.countryName })
+      // });
 
-      const  duplicateData = await checkDuplicateCountry.json();
-      if(duplicateData.isDuplicate === true){
-        toast.success("Country is Already Exists")
-      }
+      // const  duplicateData = await checkDuplicateCountry.json();
+      // if(duplicateData.isDuplicate === true){
+      //   toast.error("Country is Already Exists")
+      // }
 
       const response = await fetch('http://localhost:8000/api/country/createCountry', {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ countryname: data.countryName, countrycode: data.countryCode, phonecode: data.phoneCode })
+        body: JSON.stringify({ countryname: data.countryName, countrycode: data.countryCode, phonecode: data.phoneCode,page,limit })
       });
-  
+     
+
+      const responseData = await response.json();
+     const { result,pagination }  = responseData
       if (response.ok) {
-        const responseData = await response.json();
-  
-        if (responseData.updateMessage === 'Country Added') {
-          toast.success("Country is Added");
-        }else {
-          toast.success("Country is Added");
+        setCountries(result)
+        setCurrentPage(pagination.currentPage)
+        setTotalPage(pagination.totalPages);
+        setCount(pagination.totalCount)
+        toast.success('Country added Successfully');
+      } else {
+        // Handle error
+        if (responseData.error) {
+          // Access error message
+          toast.error(responseData.error);
+        } else {
+          toast.error('An error occurred while Adding the country.');
         }
       }
+      
     } catch (error) {
       console.error("Error adding country", error);
-      toast.error("An error occurred while adding the country.");
+      
     }
   };
   
@@ -127,30 +144,31 @@ const CountryProvider = ({ children }) => {
 
   // update the country
   const updateCountry = async (id, data) => {
-    // console.log(data)
     try {
       const response = await fetch(`http://localhost:8000/api/country/updateCountry`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: data.countryid , countryName: data.countryName, countryCode: data.countryCode, phoneCode: data.phoneCode}),
+        body: JSON.stringify({ id: id, countryName: data.countryName, countryCode: data.countryCode, phoneCode: data.phoneCode }),
       });
-
+  
       if (response.ok) {
-        fetchCountries(currentPage,5)
-        }
-
-      // Assuming the response contains the updated country data
-      const updatedCountry = await response.json();
-
-      // Update the countries state with the updated country
-      
-
+        // Assuming the response contains the updated country data
+        const updatedCountry = await response.json();
+        const { result } = updatedCountry;
+  
+        // Update the UI with the new data
+        setCountries(result);
+        console.log(countries)
+      } else {
+        console.error('Failed to update country:', response.statusText);
+      }
     } catch (error) {
       console.error('Error updating country:', error.message);
     }
   };
+  
 
   const filterData = async (country, searchData) => {
     try {
@@ -240,7 +258,7 @@ const CountryProvider = ({ children }) => {
 
 
   return (
-    <CountryContext.Provider value={{ count,countries, fetchCountries,setCurrentPage, deleteCountries, addCountry, updateCountry,sort, filterData, currentPage, totalPage }}>
+    <CountryContext.Provider value={{setCountries, count,countries, fetchCountries,setCurrentPage, deleteCountries, addCountry, updateCountry,sort, filterData, currentPage, totalPage }}>
       {children}
       <ToastContainer/>
     </CountryContext.Provider>

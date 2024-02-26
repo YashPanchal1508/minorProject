@@ -21,9 +21,8 @@ function App() {
       
       <div className="screens-container flex">
         <Sidebar/>
-        <div className='w-[100%] flex items-center justify-center backgrounds-gradient'>
+        <div className='w-[100%] flex items-center justify-center bg-gray-300'>
           <Routes>
-
         <Route path='/home' element={<HomePage/>}></Route>
         <Route path='/country' element={<Country/>}></Route>
         <Route path='/state' element={<State/>}></Route>

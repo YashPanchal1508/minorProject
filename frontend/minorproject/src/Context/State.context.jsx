@@ -4,10 +4,8 @@
 
 import { createContext, useContext } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { setData, setCurrentPage, setCountries, filterState, sortData } from '../redux/stateSlice';
+import { setData, setCurrentPage, setCountries, filterState, sortData, updateStateData, addStateData,deleteStateData } from '../redux/stateSlice';
 import { toast } from 'react-toastify';
-
-
 
 const StateContext = createContext();
 
@@ -51,7 +49,7 @@ const StateProvider = ({ children }) => {
 
   }
 
-  const addState = async (statename, countryid) => {
+  const addState = async (statename, countryid,page,limit) => {
 
     try {
       const checkDuplicateState = await fetch(`http://localhost:8000/api/state/checkDuplicateState`, {
@@ -61,7 +59,7 @@ const StateProvider = ({ children }) => {
       });
 
       const duplicateData = await checkDuplicateState.json();
-      console.log(duplicateData)
+      // console.log(duplicateData)
       if (duplicateData.isDuplicate === true) {
         toast.success("State is Already Exists")
         return null
@@ -72,7 +70,7 @@ const StateProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ statename, countryid })
+        body: JSON.stringify({ statename, countryid,page,limit })
       })
 
       if (!response.ok) {
@@ -80,7 +78,7 @@ const StateProvider = ({ children }) => {
       }
 
       const result = await response.json();
-      // console.log(result)
+       dispatch(addStateData(result))
 
       if (result.message === 'State added successfully') {
         toast.success("State Successfully Added")
@@ -96,9 +94,11 @@ const StateProvider = ({ children }) => {
   }
 
 
-  const deleteState = async (stateId) => {
+  const deleteState = async (stateId,page,limit) => {
     const response = await fetch(`http://localhost:8000/api/state/deleteState/${stateId}`, {
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page,limit })
     })
 
     if (!response.ok) {
@@ -106,10 +106,10 @@ const StateProvider = ({ children }) => {
     }
 
     const result = await response.json()
-
+    dispatch(deleteStateData(result))
     // const {data} = result
 
-    if (result.message === 'State with ID deleted successfully.') {
+    if (result.message === 'State deleted successfully.') {
       // Dispatch the deleteStateData action with updated state data
       // console.log(result)
       // dispatch(deleteStateData(result));
@@ -117,9 +117,6 @@ const StateProvider = ({ children }) => {
     } else if(result.message === 'Cannot delete state as it is associated with cities.'){
         toast.error("Cannot delete state as it is associated with cities.")
     }   
-    else {
-      toast.error("Error Deleting State");
-    }
   }
 
   const filterData = async (state, searchQuery) => {
@@ -168,13 +165,14 @@ const StateProvider = ({ children }) => {
         body: JSON.stringify({ data, countryid, id }),
       });
 
-      if (response.ok) {
-        getState(pagination.currentPage, pagination.rowsPerPage)
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
       }
 
       // Assuming the response contains the updated country data
       const updatedState = await response.json();
-      console.log(updatedState)
+      const { country } = updatedState;
+      dispatch(updateStateData(country));
       // console.log(updateState)
       // Update the countries state with the updated country
 
