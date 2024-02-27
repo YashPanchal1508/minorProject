@@ -359,7 +359,9 @@ function Country() {
                 )}
               </TableBody>
             </Table>
-            <div className='flex justify-end'>
+            <div className='flex justify-end'
+            style={{position: 'sticky', bottom: 0, background: '#fff'}}
+            >
               {!searchResults && <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 colSpan={3}
