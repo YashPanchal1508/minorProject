@@ -17,10 +17,24 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+ 
+
+    // Perform client-side validation
+    if (formData.userName.length < 3) {
+      toast.error("Username must be at least 3 characters long");
+      return;
+    }
+
+    if (formData.password.length < 5) {
+      toast.error("Password must be at least 5 characters long");
+      return;
+    }
+
+
     if (formData.password !== formData.retypePassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
+      toast.error("Passwords do not match");
+      return;
+    }
     try {
       const response = await fetch('http://localhost:8000/api/user/CreateUser', {
         method: 'POST',
@@ -29,22 +43,31 @@ const Register = () => {
         },
         body: JSON.stringify({userName: formData.userName, password: formData.password, email: formData.email})
       });
+      
+      const data = await response.json();
 
-      if(!response.ok){
-        const errorMessage = await response.json()
-        toast.error(errorMessage.error)
+      if (!response.ok) {
+        if (data.errors) {
+          // Display error message received from the middleware
+          toast.error(data.errors[0].msg);
+        } else if(data.error){
+          toast.error(data.error)
+        }else {
+          // Default error message for unexpected errors
+          toast.error("Error while Register User");
+        }
+       
+        return;
       }
 
-      const data = await response.json();
+  
+
 
       if (response.ok) {
         // Registration successful, redirect to login page
         toast.success(data.message);
         history('/login');
-      } else {
-        // Registration failed, show error message
-        toast.error(data.error);
-      }
+      } 
     } catch (error) {
       console.error('Registration failed:', error);
     }

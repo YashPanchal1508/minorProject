@@ -153,6 +153,14 @@ router.put('/updateState', async (req, res) => {
         return res.status(400).json({ error: 'Country ID is required.' });
     }
 
+    const existingState = await pool.query('SELECT COUNT(*) FROM state WHERE LOWER(statename) = LOWER($1) AND countryid = $2 AND isdeleted = false', [data.toLowerCase(), countryid]);
+
+    console.log(existingState.rows[0].count)
+
+    if(existingState.rows[0].count > 0){
+        return res.status(404).json({ error: 'State already exists.' });
+    }
+
     try {
         const result = await pool.query(
             'UPDATE state SET statename = $1, countryid = $2 WHERE stateid = $3 RETURNING *',

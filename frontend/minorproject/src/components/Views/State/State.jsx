@@ -151,7 +151,7 @@ const State = () => {
     if (isValid) {
       if (editState) {
         await updateState(stateName, selectedCountry, editState.stateid);
-        toast.success("State Updated Successfully")
+
       }
       else {
         await addState(stateName, selectedCountry, pagination.currentPage, pagination.rowsPerPage);
@@ -246,7 +246,7 @@ const State = () => {
         <div className="w-[100%] flex justify-between ">
           <div className="input-group w-[300px]">
             <input
-              type="search"
+              type="text"
               className="form-control rounded border border-black bg-transparent pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
               placeholder="Search"
               aria-label="Search"
@@ -329,7 +329,7 @@ const State = () => {
               {editState ? 'Cancel' : 'cancel'}
             </Button>
             <Button onClick={handleSave} color="primary">
-              Save
+               { editState ? 'Update' : 'Save'}
             </Button>
           </DialogActions>
         </Dialog>

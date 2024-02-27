@@ -152,7 +152,14 @@ const CountryProvider = ({ children }) => {
         },
         body: JSON.stringify({ id: id, countryName: data.countryName, countryCode: data.countryCode, phoneCode: data.phoneCode }),
       });
-  
+      
+      if(!response.ok){
+        const responseData = await response.json();
+        if(responseData.error){
+          toast.error(responseData.error)
+        }
+      }
+
       if (response.ok) {
         // Assuming the response contains the updated country data
         const updatedCountry = await response.json();
@@ -160,7 +167,7 @@ const CountryProvider = ({ children }) => {
   
         // Update the UI with the new data
         setCountries(result);
-        console.log(countries)
+        toast.success('The Country Updated Successfully!')
       } else {
         console.error('Failed to update country:', response.statusText);
       }

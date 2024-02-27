@@ -137,7 +137,6 @@ function Country() {
         setCountries(updatedCountryData)
       }
       // Provide feedback to the user about the successful update
-      toast.success('Country updated successfully!');
       setModalOpen(false);
 
     } catch (error) {
@@ -170,7 +169,7 @@ function Country() {
     }
 
     if (searchData.search === '' && searchData.code === '') {
-      console.log("yash")
+   
       fetchCountries(currentPage, rowsPerPage, sortOrder, columnName);
     } else {
       filterData(country, searchData);
@@ -289,8 +288,9 @@ function Country() {
                     onMouseEnter={() => handleHover('countryname', true)}
                     onMouseLeave={() => handleHover('countryname', false)}
                   >
-                    <span className="mr-1"> Country Name </span>
-                    <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
+
+                    <span className="mr-3"> Country Name </span>
+                    <div className={`absolute  top-0  transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                     </div>
                   </TableCell>
@@ -300,8 +300,11 @@ function Country() {
                     onMouseEnter={() => handleHover('countrycode', true)}
                     onMouseLeave={() => handleHover('countrycode', false)}
                   >
-                    <span className="mr-1"> Country Code </span>
-                    <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.countrycode ? 'opacity-100' : 'opacity-0'}`}>
+             
+
+                    <span className="text-center"> Country Code </span>
+
+                    <div className={`absolute  top-0  transition-opacity duration-300 ${isHovered.countrycode ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                     </div>
                   </TableCell>
@@ -312,7 +315,8 @@ function Country() {
                     onMouseEnter={() => handleHover('phonecode', true)}
                     onMouseLeave={() => handleHover('phonecode', false)}
                   >
-                    <span className="mr-1"> Phone Code </span>
+
+                    <span className=""> Phone Code </span>
                     <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.phonecode ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                     </div>

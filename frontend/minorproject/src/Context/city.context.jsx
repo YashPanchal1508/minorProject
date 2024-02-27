@@ -2,8 +2,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext } from "react";
 import { useDispatch } from 'react-redux';
-import { setData, setCurrentPage, setCountries, setStates, addCityData, filterCity, sortData,updateCityData,deleteCityData } from '../redux/CitySlice';
+import { setData, setCurrentPage, setCountries, setStates, addCityData, filterCity, sortData, updateCityData, deleteCityData } from '../redux/CitySlice';
 import { toast } from "react-toastify";
+import { closeModal } from "../redux/stateSlice";
 
 const CityContext = createContext();
 
@@ -116,11 +117,18 @@ const CityProvider = ({ children }) => {
         })
 
         const result = await response.json();
+
+        if (result.error) {
+            toast.error(result.error)
+        }
         const { city } = result;
+        if (result.message) {
+            toast.success(result.message)
+        }
         dispatch(updateCityData(city));
     }
 
-    const deleteCity = async (cityId,page, limit) => {
+    const deleteCity = async (cityId, page, limit) => {
         const response = await fetch(`http://localhost:8000/api/city/removeCity`, {
             method: 'DELETE',
             headers: {
@@ -131,13 +139,18 @@ const CityProvider = ({ children }) => {
 
         const data = await response.json();
 
-         dispatch(deleteCityData(data))
+
+
+        dispatch(deleteCityData(data))
 
         if (data.message === `City Deleted Successfully`) {
             toast.success("City Deleted Successfully")
-        } else {
+        }
+        else {
             toast.error("Error Deleting City")
         }
+
+
 
 
     }

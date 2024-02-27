@@ -109,6 +109,14 @@ router.put('/updateCity',async (req, res) => {
     //     return res.status(404).json({ error: 'Country or state not found.' });
     // }
 
+    // Check if the city already exists
+    const existingCity = await pool.query('SELECT COUNT(*) FROM city WHERE LOWER(cityname) = LOWER($1) AND stateid = $2 AND isdeleted = false', [cityName.toLowerCase(),stateId]);
+
+
+    if(existingCity.rows[0].count > 0){
+        return res.status(404).json({ error: 'City already exists.' });
+    }
+
     const cityUpdate = await pool.query(
         'UPDATE city SET cityname = $1, stateid = $2, countryid = $3 WHERE cityid = $4 RETURNING *',
         [cityName, stateId, countryId ,cityId])

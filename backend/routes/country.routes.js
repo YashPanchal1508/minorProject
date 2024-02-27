@@ -133,6 +133,15 @@ router.put('/updateCountry', async (req, res) => {
   const { id, countryName, countryCode, phoneCode} = req.body;
 
   try {
+
+    const existingCountry = await pool.query(
+    'select COUNT(*) from country where LOWER(countryname) = LOWER($1) AND isdeleted = false',
+      [countryName])
+
+      if(existingCountry.rows[0].count > 0){
+      return res.status(400).json({ error: 'Country name already exists.' });
+    }
+
     // Update country data in the database
     const result = await pool.query(
       'UPDATE country SET countryname = $1, countrycode = $2, phonecode = $3 WHERE countryid = $4 RETURNING *',

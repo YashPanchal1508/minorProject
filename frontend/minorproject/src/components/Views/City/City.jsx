@@ -214,28 +214,23 @@ const City = () => {
 
   }
 
-  const handleSave = async () => {
-    try {
+  const handleSave =  () => {
+
       const isValid = validateForm();
 
       // Check if the form is valid
       if (isValid) {
         if (editState) {
-          await updateCity(selectedCountry, stateName, cityName, CityId)
-          toast.success("Country Updated Successfully")
+          updateCity(selectedCountry, stateName, cityName, CityId)
         } else {
-          await addCity(selectedCountry, stateName, cityName, pagination.currentPage, pagination.rowsPerPage)
+          addCity(selectedCountry, stateName, cityName, pagination.currentPage, pagination.rowsPerPage)
         }
-        // getCity(pagination.currentPage, pagination.rowsPerPage,sortOrder,column)
         setStateName('')
+        // dispatch(closeModal())
         dispatch(closeModal())
       }
-    } catch (error) {
-      console.log("Error occurred", error)
-    }
-
-
-  }
+    } 
+  
 
   const handleCountryChange = (event) => {
     dispatch(setSelectedCountry(event.target.value));
@@ -280,7 +275,7 @@ const City = () => {
       <div className="w-[100%] flex justify-between city-header mb-4">
         <div className="input-group w-[300px] gap-2 relative">
           <input
-            type="search"
+            type="text"
             className="form-control rounded border border-black bg-transparent pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
             placeholder="Search"
             aria-label="Search"
@@ -377,7 +372,7 @@ const City = () => {
               {editState ? "cancel" : "cancel"}
             </Button>
             <Button onClick={handleSave} color="primary">
-              Save
+             { editState ? "Update" : "Save" }
             </Button>
           </DialogActions>
         </Dialog>

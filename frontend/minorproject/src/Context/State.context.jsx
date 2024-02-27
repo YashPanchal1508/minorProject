@@ -4,7 +4,7 @@
 
 import { createContext, useContext } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { setData, setCurrentPage, setCountries, filterState, sortData, updateStateData, addStateData,deleteStateData } from '../redux/stateSlice';
+import { setData, setCurrentPage, setCountries, filterState, sortData, updateStateData, addStateData, deleteStateData } from '../redux/stateSlice';
 import { toast } from 'react-toastify';
 
 const StateContext = createContext();
@@ -14,14 +14,14 @@ const StateProvider = ({ children }) => {
 
   const dispatch = useDispatch();
 
-  const getState = async (page, limit,sort,column) => {
+  const getState = async (page, limit, sort, column) => {
     try {
       const response = await fetch(`http://localhost:8000/api/state/getState`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ page, limit, sort,column })
+        body: JSON.stringify({ page, limit, sort, column })
       });
 
       if (!response.ok) {
@@ -49,7 +49,7 @@ const StateProvider = ({ children }) => {
 
   }
 
-  const addState = async (statename, countryid,page,limit) => {
+  const addState = async (statename, countryid, page, limit) => {
 
     try {
       const checkDuplicateState = await fetch(`http://localhost:8000/api/state/checkDuplicateState`, {
@@ -70,7 +70,7 @@ const StateProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ statename, countryid,page,limit })
+        body: JSON.stringify({ statename, countryid, page, limit })
       })
 
       if (!response.ok) {
@@ -78,14 +78,14 @@ const StateProvider = ({ children }) => {
       }
 
       const result = await response.json();
-       dispatch(addStateData(result))
+      dispatch(addStateData(result))
 
       if (result.message === 'State added successfully') {
         toast.success("State Successfully Added")
-      }else if(result.updateMessage === 'State Updated'){
+      } else if (result.updateMessage === 'State Updated') {
         toast.success("State Successfully Added")
-      }   
-       else {
+      }
+      else {
         toast.error("Error Adding State")
       }
     } catch (error) {
@@ -94,11 +94,11 @@ const StateProvider = ({ children }) => {
   }
 
 
-  const deleteState = async (stateId,page,limit) => {
+  const deleteState = async (stateId, page, limit) => {
     const response = await fetch(`http://localhost:8000/api/state/deleteState/${stateId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page,limit })
+      body: JSON.stringify({ page, limit })
     })
 
     if (!response.ok) {
@@ -114,9 +114,9 @@ const StateProvider = ({ children }) => {
       // console.log(result)
       // dispatch(deleteStateData(result));
       toast.success("State Deleted Successfully");
-    } else if(result.message === 'Cannot delete state as it is associated with cities.'){
-        toast.error("Cannot delete state as it is associated with cities.")
-    }   
+    } else if (result.message === 'Cannot delete state as it is associated with cities.') {
+      toast.error("Cannot delete state as it is associated with cities.")
+    }
   }
 
   const filterData = async (state, searchQuery) => {
@@ -165,13 +165,20 @@ const StateProvider = ({ children }) => {
         body: JSON.stringify({ data, countryid, id }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
+    
       // Assuming the response contains the updated country data
       const updatedState = await response.json();
+
+      if (updatedState.error) {
+        toast.error(updatedState.error)
+      }
+
       const { country } = updatedState;
+
+
+      if (updatedState.message) {
+        toast.success(updatedState.message)
+      }
       dispatch(updateStateData(country));
       // console.log(updateState)
       // Update the countries state with the updated country
