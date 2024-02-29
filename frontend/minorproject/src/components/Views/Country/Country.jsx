@@ -28,11 +28,7 @@ function Country() {
   const [sortOrder, setSortOrder] = useState('asc');
   const [columnName, setColumnName] = useState('')
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [isHovered, setIsHovered] = useState({
-    countryname: false,
-    countrycode: false,
-    phonecode: false
-  });
+
 
   const {
     setCountries,
@@ -87,7 +83,6 @@ function Country() {
         setPage(newPage - 1);
       }
       setDeleteConfirmation(null);
-      setSearchResults('')
     } catch (error) {
       console.error('Error deleting country:', error);
     }
@@ -98,6 +93,7 @@ function Country() {
   };
 
   const handleOpenModal = (mode, country) => {
+   
     setModalMode(mode);
     setSelectedCountry(country);
     setModalOpen(true);
@@ -109,6 +105,7 @@ function Country() {
 
   const handleAddCountry = (data) => {
     try {
+      console.log(data)
       addCountry(data, currentPage, rowsPerPage);
       setSearchResults('')
       setModalOpen(false);
@@ -229,9 +226,7 @@ function Country() {
 
 
   // Function to handle hover events
-  const handleHover = (columnName, isHovering) => {
-    setIsHovered({ [columnName]: isHovering });
-  };
+
 
   return (
     <>
@@ -255,13 +250,10 @@ function Country() {
             <button
               type="button"
               className="inline-block px-4 py-2 text-sm font-bold leading-5 text-white transition-colors duration-150 bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
-              onClick={() => handleOpenModal()}
+              onClick={() => handleOpenModal('add',null)}
             >
               Add Country
             </button>
-
-
-
           </div>
 
           {isModalOpen && (
@@ -285,41 +277,32 @@ function Country() {
                   <TableCell
                     className='text-center cursor-pointer relative'
                     onClick={() => handleSort('countryname')}
-                    onMouseEnter={() => handleHover('countryname', true)}
-                    onMouseLeave={() => handleHover('countryname', false)}
+                  
                   >
 
                     <span className="mr-3"> Country Name </span>
-                    <div className={`absolute  top-0  transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                    </div>
                   </TableCell>
                   <TableCell
                     className='text-center cursor-pointer relative'
                     onClick={() => handleSort('countrycode')}
-                    onMouseEnter={() => handleHover('countrycode', true)}
-                    onMouseLeave={() => handleHover('countrycode', false)}
+                 
                   >
              
 
                     <span className="text-center"> Country Code </span>
 
-                    <div className={`absolute  top-0  transition-opacity duration-300 ${isHovered.countrycode ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                    </div>
                   </TableCell>
 
                   <TableCell
-                    className='text-center cursor-pointer relative'
+                    className='text-center cursor-pointer relative '
                     onClick={() => handleSort('phonecode')}
-                    onMouseEnter={() => handleHover('phonecode', true)}
-                    onMouseLeave={() => handleHover('phonecode', false)}
+       
                   >
 
                     <span className=""> Phone Code </span>
-                    <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.phonecode ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                    </div>
                   </TableCell>
 
                   <TableCell className='text-center'>Action</TableCell>
@@ -359,7 +342,7 @@ function Country() {
                 )}
               </TableBody>
             </Table>
-            <div className='flex justify-end'
+            <div className='flex justify-end sticky-bottom -z-0'
             style={{position: 'sticky', bottom: 0, background: '#fff'}}
             >
               {!searchResults && <TablePagination

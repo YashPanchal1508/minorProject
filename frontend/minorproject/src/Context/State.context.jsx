@@ -102,11 +102,14 @@ const StateProvider = ({ children }) => {
     })
 
     if (!response.ok) {
+    const result = await response.json()
+     if (result.message === 'Cannot delete state as it is associated with cities.') {
+      toast.error("Cannot delete state with existing city")
+    }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const result = await response.json()
-    dispatch(deleteStateData(result))
     // const {data} = result
 
     if (result.message === 'State deleted successfully.') {
@@ -114,9 +117,9 @@ const StateProvider = ({ children }) => {
       // console.log(result)
       // dispatch(deleteStateData(result));
       toast.success("State Deleted Successfully");
-    } else if (result.message === 'Cannot delete state as it is associated with cities.') {
-      toast.error("Cannot delete state as it is associated with cities.")
     }
+    dispatch(deleteStateData(result))
+
   }
 
   const filterData = async (state, searchQuery) => {

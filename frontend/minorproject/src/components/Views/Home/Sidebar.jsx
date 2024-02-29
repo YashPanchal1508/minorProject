@@ -1,51 +1,148 @@
-import { Link, useLocation,useNavigate  } from 'react-router-dom';
+// import { Link, useLocation, useNavigate } from 'react-router-dom';
+// import * as FaIcons from 'react-icons/fa';
+// import * as AiIcons from 'react-icons/ai';
+// import { SidebarData } from './SidebarData.jsx';
+// import './Navbar.css';
+// import { IconContext } from 'react-icons';
+// import { useState } from 'react';
+
+// const Sidebar = () => {
+//   const [sidebar, setSidebar] = useState(false);
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   const showSidebar = () => {
+//     setSidebar(!sidebar);
+//   };
+
+//   // Function to handle clicks on sidebar items
+//   const handleItemClick = (e) => {
+//     e.stopPropagation();
+//   };
+
+//   // Function to handle logout
+//   const handleLogout = () => {
+//     localStorage.clear();
+//     navigate('/login'); // Redirect to login page
+//   };
+
+//   return (
+//     <>
+//       <IconContext.Provider value={{ color: '#fff' }}>
+//         <div className='navbar'>
+//           <Link to='#' className='menu-bars'>
+//             <FaIcons.FaBars onClick={showSidebar} />
+//           </Link>
+//         </div>
+//         <nav className={sidebar ? 'nav-menu active' : 'nav-menu'}>
+//           <ul className='nav-menu-items'>
+//             <li className='navbar-toggle'>
+//               <Link to='#' className='menu-bars' onClick={showSidebar}>
+//                 <AiIcons.AiOutlineClose />
+//               </Link>
+//             </li>
+//             {SidebarData.map((item, index) => (
+//               <li key={index} className={item.cName} onClick={handleItemClick}>
+//                 <Link to={item.path} onClick={item.title === 'Logout' ? handleLogout : null}
+//                   className={location.pathname === item.path ? 'active' : ''}
+//                 >
+//                   {item.icon}
+//                   <span className='color-text'>{item.title}</span>
+//                 </Link>
+//               </li>
+//             ))}
+//           </ul>
+//         </nav>
+//       </IconContext.Provider>
+//     </>
+//   );
+// };
+
+// export default Sidebar;
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { ImEarth } from 'react-icons/im'; // Import icon component for Earth
+import { IoLogOut } from 'react-icons/io5'; // Import icon component for Logout
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const removeItem = () => {
-    localStorage.clear();
-    navigate("/")
-  }
+  const handleLogout = () => {
+    // Remove authToken from local storage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('tokenTimestamp');
+
+    // Redirect to the login page
+    navigate('/login');
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-slate-800  text-white font-sans w-[15%] h-screen">
-      <Link
-        to="/country"
-        className={`py-3 px-5 mb-6  text-center rounded text-lg font-extrabold  ${
-          location.pathname === '/country' ? 'text-slate-600 ' : 'hover:text-slate-500 transition duration-300 ease-in-out'
-        }`}
-      >
-        Country
-      </Link>
-      <Link
-        to="/state"
-        className={`py-3 px-5 mb-6 text-center rounded text-lg font-extrabold  ${
-          location.pathname === '/state' ? 'text-slate-600' : 'hover:text-slate-500 transition duration-300 ease-in-out'
-        }`}
-      >
-        State
-      </Link>
-      <Link
-        to="/city"
-        className={`py-3 px-5 mb-6  text-center rounded text-lg font-extrabold  ${
-          location.pathname === '/city' ? 'text-slate-400' : 'hover:text-slate-500  transition duration-300 ease-in-out'
-        }`}
-      >
-        City
-      </Link>
-      <Link
-        to="/login"
-        onClick={removeItem}
-        className={`py-3 px-5 mb-6  text-center rounded text-lg font-extrabold  ${
-          location.pathname === '/login' ? 'text-slate-400' : 'hover:text-slate-500  transition duration-300 ease-in-out'
-        }`}
-      >
-        Logout
-      </Link>
+    <div className="flex flex-col bg-blue-900 text-white w-[15%] h-screen p-4">
+      <div className="transition-all duration-300">
+        <div className="">
+          {/* Hamburger Icon */}
+          
+        </div>
+
+        <div className="mt-20 flex flex-col items-start">
+          <div className='my-3'>
+            <NavLink
+              className={`relative text-xl font-semibold font-mono ${
+                location.pathname === "/country" ? "text-black" : "text-white"
+              } hover:text-black transition-colors duration-300 flex items-center`}
+              to="/country"
+            >
+              <ImEarth className="inline-block mr-2" /> 
+              Country
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 origin-bottom transition-transform duration-300 ease-in-out group-hover:scale-x-100 "></div>
+            </NavLink>
+          </div>
+          <div className='my-3'>
+            <NavLink
+              className={`relative text-xl font-semibold font-mono ${
+                location.pathname === "/state" ? "text-black" : "text-white"
+              } hover:text-black transition-colors duration-300 flex items-center`}
+              to="/state"
+            >
+              <ImEarth className="inline-block mr-2" /> 
+              State
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 origin-bottom transition-transform duration-300 ease-in-out group-hover:scale-x-100"></div>
+            </NavLink>
+          </div>
+          <div className='my-3'> 
+            <NavLink
+              className={`relative  text-xl font-semibold font-mono ${
+                location.pathname === "/city" ? "text-black" : "text-white"
+              } hover:text-black transition-colors duration-300 flex items-center`}
+              to="/city"
+            >
+              <ImEarth className="inline-block mr-2" />
+              City
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-white transform scale-x-0 origin-bottom transition-transform duration-300 ease-in-out group-hover:scale-x-100"></div>
+            </NavLink>
+          </div>
+        </div>
+      </div>
+
+      {/* Log Out Button */}
+      <div className="mt-auto">
+        <button
+          className="text-lg text-white hover:text-black transition-colors duration-300 flex items-center"
+          onClick={handleLogout}
+        >
+          <IoLogOut className="inline-block mr-2" /> 
+          Logout
+        </button>
+      </div>
     </div>
   );
 };
 
 export default Sidebar;
+
+
+
+
+
+
+

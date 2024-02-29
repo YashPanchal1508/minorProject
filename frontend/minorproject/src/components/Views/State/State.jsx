@@ -27,11 +27,7 @@ const State = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [columnName, setColumnName] = useState('')
   const [errors, setErrors] = useState({});
-  const [isHovered, setIsHovered] = useState({
-    countryname: false,
-    statename: false,
-  
-  });
+
   
   const navigate = useNavigate()
 
@@ -80,22 +76,25 @@ const State = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!stateName.match(/^[A-Za-z]{1,50}$/)) {
-      newErrors.stateName = 'State name should contain only alphabets (max 50 characters)';
+  
+    // Validate state name
+    if (!stateName.match(/^[A-Za-z\s]{1,50}$/)) {
+      newErrors.stateName = 'State name should contain only alphabets and spaces (max 50 characters)';
     }
-    if (stateName.length === 0) {
-      newErrors.stateName = 'State name should not blank'
+    if (stateName.trim().length === 0) {
+      newErrors.stateName = 'State name should not be blank';
     }
-
+  
+    // Validate selected country
     if (!selectedCountry) {
-      newErrors.selectedCountry = 'Pls select country name';
+      newErrors.selectedCountry = 'Please select a country name';
     }
-
+  
     setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
+  
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+  
 
   const handleDelete = (stateId) => {
 
@@ -194,16 +193,18 @@ const State = () => {
     setDeleteConfirmation(null)
   }
 
-  const confirmDelete = async () => {
+  const confirmDelete =  async() => {
     await deleteState(deleteConfirmation, pagination.currentPage, pagination.rowsPerPage);
-    if (countries.length === 1 && pagination.totalPage > 1) {
-      const newPage = pagination.currentPage > 1 ? pagination.currentPage - 1 : 1;
-      setCurrentPage(newPage);
-    }
-    // await getState(1, pagination.rowsPerPage,sortOrder,columnName)
-    setDeleteConfirmation(null)
-    setSearchResults('')
+    // if (countries.length === 1 && pagination.totalPage > 1) {
+      //   const newPage = pagination.currentPage > 1 ? pagination.currentPage - 1 : 1;
+      //   setCurrentPage(newPage);
+      // }
+      // await getState(1, pagination.rowsPerPage,sortOrder,columnName)
+      setDeleteConfirmation(null)
+      setSearchResults('')
   }
+
+
   let searchData;
   const handleSearchChange = (e) => {
     const state = 'state';
@@ -235,10 +236,7 @@ const State = () => {
     dispatch(closeModal())
   }
 
-  const handleHover = (columnName, isHovering) => {
-    setIsHovered({ [columnName]: isHovering });
-  };
-
+ 
 
   return (
     <div className='w-3/4'>
@@ -274,9 +272,6 @@ const State = () => {
           >
             Add State
           </button>
-
-
-
 
         </div>
 
@@ -342,28 +337,27 @@ const State = () => {
           <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
             <TableHead className="sticky top-0 bg-white">
               <TableRow>
-                <TableCell className='text-center'>State ID</TableCell>
+                <TableCell className='text-center'>
+                  
+                  State ID
+                </TableCell>
                 <TableCell
                   className='cursor-pointer text-center'
                   onClick={() => handleSort('countryname')}
-                  onMouseEnter={() => handleHover('countryname', true)}
-                    onMouseLeave={() => handleHover('countryname', false)}
+           
                 >
-                 <span className="mr-1"> Country Name  </span> 
-                 <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
+                 <span className="mr-1">
+                   Country Name  
+                   </span> 
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                    </div>
                 </TableCell>
                 <TableCell
                   className='cursor-pointer text-center'
                   onClick={() => handleSort('statename')}
-                  onMouseEnter={() => handleHover('statename', true)}
-                  onMouseLeave={() => handleHover('statename', false)}
+              
                 >
                 <span className="mr-1"> State Name</span> 
-                <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.statename ? 'opacity-100' : 'opacity-0'}`}>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                    </div>
                 </TableCell>
                 <TableCell className='text-center'>Action</TableCell>
               </TableRow>

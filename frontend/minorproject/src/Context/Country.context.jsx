@@ -77,6 +77,13 @@ const CountryProvider = ({ children }) => {
         },
          
       );
+      if(!response.ok){
+      const data = await response.json();
+
+        if(data.message === 'Cannot delete country as it is associated with states.'){
+          toast.error("Can't Delete Country With existing state!");
+        }
+      }
 
       const data = await response.json();
       const {pagination,finalResult } = data
@@ -84,9 +91,8 @@ const CountryProvider = ({ children }) => {
       setCurrentPage(pagination.currentPage);
       setTotalPage(pagination.totalPages);
       setCount(pagination.totalCount)
-      if(data.message === 'Cannot delete country as it is associated with states.'){
-        toast.error("Can't Delete Country This country has been linked with a state!");
-      }else if(data.message === 'Country deleted successfully.'){
+      
+     if(data.message === 'Country deleted successfully.'){
         toast.success("Country deleted successfully.")
       }
     } catch (error) {

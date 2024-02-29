@@ -56,7 +56,20 @@ router.post('/createCountry', async (req, res) => {
       if (existingCountry.isdeleted) {
         // Update existing country's isdeleted flag to false
         const updatedQuery = await pool.query('UPDATE country SET isdeleted = false WHERE countryname = $1 RETURNING *', [existingCountry.countryname]);
-        return res.status(200).json({ updateMessage: "Country Updated", rows: updatedQuery.rows[0] });
+        const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
+        const totalCount = totalCountQuery.rows[0].count;
+  
+        // Fetch paginated data of existing countries
+        const offset = (page - 1) * limit;
+        const allData = await pool.query('SELECT * FROM country WHERE isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
+        return res.status(200).json({
+          result: allData.rows,
+          pagination: {
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+          }
+        });
       } else {
         return res.status(400).json({ error: 'Country already exists'});
       }

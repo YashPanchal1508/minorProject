@@ -5,31 +5,45 @@ import Country from './components/Views/Country/Country';
 import HomePage from './components/Views/Home/Homepage';
 import Sidebar from './components/Views/Home/Sidebar';
 import State from './components/Views/State/State';
-import './styles/App.css'
 import {Routes, Route, useLocation } from "react-router-dom";
-
+import {useState} from 'react'
+import { X } from 'lucide-react'; // Import the X icon
 function App() {
 
   const location = useLocation()
   const isRootUrl = location.pathname === '/'
   const isLogin = location.pathname === '/login'
+  const [showSidebar, setShowSidebar] = useState(false);
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+  };
   
   return (
      <div className="App">
     { !isRootUrl && !isLogin ? (
       <>
-      
-      <div className="screens-container flex">
-        <Sidebar/>
-        <div className='w-[100%] flex items-center justify-center bg-gray-300'>
+      <div className="flex h-screen relative" >
+      <div className="absolute top-5 left-5 z-50">
+          <button
+            className="text-3xl text-black focus:outline-none"
+            onClick={toggleSidebar}
+            style={{ zIndex: 1000 }}
+          >
+            {showSidebar ? <X size={40} /> : '☰'}
+          </button>
+        </div>
+    
+        {showSidebar && !isRootUrl && <Sidebar />}
+        <div className='w-screen flex items-center justify-center bg-gray-300 content-area'>
           <Routes>
-        <Route path='/home' element={<HomePage/>}></Route>
+        <Route path='/home' element={<HomePage/> }></Route>
         <Route path='/country' element={<Country/>}></Route>
         <Route path='/state' element={<State/>}></Route>
         <Route path='/city' element={<City/>}></Route>
           </Routes>
         </div>
       </div>
+    
       </>
     ): (
       <Routes>
@@ -89,3 +103,5 @@ export default App
 // }
 
 // export default App;
+
+

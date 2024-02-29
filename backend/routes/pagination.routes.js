@@ -65,10 +65,10 @@ const pagination = async(tableName, page, limit, search, code, sortOrder) => {
     
     switch (tableName) {
         case 'country':
-             params = [`%${search}%`, intCode]    
+             params = [`%${search}%`, `%${search}%`,intCode]    
              return await pool.query(
                 `SELECT * FROM ${tableName} WHERE isdeleted = false
-                 AND countryname ILIKE $1 OR countrycode ILIKE $1 OR phonecode = $2
+                 AND (countryname ILIKE $1 OR countrycode ILIKE $2 OR phonecode::text = $3)
                 `,
                 params
              );

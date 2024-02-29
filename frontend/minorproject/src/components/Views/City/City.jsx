@@ -28,20 +28,14 @@ const City = () => {
   const [errors, setErrors] = useState({});
   const [sortOrder, setSortOrder] = useState('');
   const [column, setColumn] = useState('')
-  const [isHovered, setIsHovered] = useState({
-    countryname: false,
-    statename: false,
-    cityname: false
-  });
+
   const { data: states, pagination, isOpen, countries, editState, selectedCountry, stateData, selectedState } = useSelector((state) => state.city);
 
   const { getCity, getAllCountries, getAllStates, addCity, updateCity, deleteCity, filterData, sort } = useCityContext()
 
   const navigate = useNavigate()
 
-  const handleHover = (columnName, isHovering) => {
-    setIsHovered({ [columnName]: isHovering });
-  };
+ 
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -85,28 +79,30 @@ const City = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
+  
+    // Validate state name
     if (!stateName) {
-      newErrors.stateName = 'Pls select state name';
+      newErrors.stateName = 'Please select a state name';
     }
-
-
+  
+    // Validate country name
     if (!selectedCountry) {
-      newErrors.selectedCountry = 'Pls select country name ';
+      newErrors.selectedCountry = 'Please select a country name';
     }
-
-    if (!cityName.match(/^[A-Za-z]{1,50}$/)) {
-      newErrors.cityName = 'City should contain only alphabets (max 50 characters)'
+  
+    // Validate city name
+    if (!cityName.match(/^[A-Za-z\s]{1,50}$/)) {
+      newErrors.cityName = 'City name should contain only alphabets and spaces (max 50 characters)';
     }
-
-    if (cityName.length === 0) {
-      newErrors.cityName = 'City should not blank'
+    if (cityName.trim().length === 0) {
+      newErrors.cityName = 'City name should not be blank';
     }
-
-    setErrors(newErrors)
-
-    return Object.keys(newErrors).length === 0;
-  }
+  
+    setErrors(newErrors);
+  
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
+  
 
   useEffect(() => {
     if (!editState) {
@@ -297,7 +293,10 @@ const City = () => {
         {/* Dialog Box */}
 
         <Dialog open={isOpen} onClose={handleCancel}>
-          <DialogTitle className='flex justify-between'> {editState ? 'Edit City' : 'Add City'}
+          <DialogTitle className='flex justify-between'> 
+          <div className='flex items-center p-2'>
+          {editState ? 'Edit City' : 'Add City'}
+          </div>
             <IconButton aria-label="close" onClick={handleClose}>
               <CloseIcon />
             </IconButton>
@@ -389,32 +388,23 @@ const City = () => {
 
                 <TableCell className='text-center'>City ID</TableCell>
                 <TableCell className='text-center cursor-pointer' onClick={() => handleSort('cityname')}
-                  onMouseEnter={() => handleHover('cityname', true)}
-                  onMouseLeave={() => handleHover('cityname', false)}
+                
                 >
                   <span className="mr-1"> City Name </span>
-                  <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.cityname ? 'opacity-100' : 'opacity-0'}`}>
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                  </div>
                 </TableCell>
                 <TableCell className='text-center cursor-pointer' onClick={() => handleSort('statename')}
-                       onMouseEnter={() => handleHover('statename', true)}
-                       onMouseLeave={() => handleHover('statename', false)}
+                     
                 >
                   <span className="mr-1">   State Name</span>  
-                  <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.statename ? 'opacity-100' : 'opacity-0'}`}>
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                  </div>
                   
                    </TableCell>
                 <TableCell className='text-center cursor-pointer' onClick={() => handleSort('countryname')}
-                 onMouseEnter={() => handleHover('countryname', true)}
-                 onMouseLeave={() => handleHover('countryname', false)}
+              
                 >
                   <span className="mr-1"> Country Name </span> 
-                  <div className={`absolute top-0 transition-opacity duration-300 ${isHovered.countryname ? 'opacity-100' : 'opacity-0'}`}>
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
-                  </div>
                 </TableCell>
                 {/* Add more table headers as needed */}
                 <TableCell className='text-center'>Action</TableCell>

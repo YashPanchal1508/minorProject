@@ -108,14 +108,14 @@ router.post('/addState', async (req, res) => {
 
 router.delete('/deleteState/:id', async (req, res) => {
     const id = req.params.id;
-    const {page,limit} = req.body
+    const {page =1 ,limit = 5} = req.body
     try {
         // Check if the state is associated with any cities
         const cityCheck = await pool.query('SELECT * FROM city WHERE stateid = $1 and isdeleted = false', [id]);
 
         if (cityCheck.rows.length > 0) {
             // If the state is associated with cities, return a message indicating the association
-            return res.status(200).json({ message: 'Cannot delete state as it is associated with cities.' });
+            return res.status(400).json({ message: 'Cannot delete state as it is associated with cities.' });
         }
 
         // If the state is not associated with any cities, proceed with deletion
@@ -125,7 +125,9 @@ router.delete('/deleteState/:id', async (req, res) => {
       
             const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
             const totalCount = totalCountQuery.rows[0].count;
-      const finalResult = await pool.query('SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false limit $1 offset $2', [limit,offset])
+      const finalResult = await pool.query(
+        'SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false limit $1 offset $2', 
+        [limit,offset])
 
 
         if (result.rowCount > 0) {

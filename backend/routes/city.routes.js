@@ -34,7 +34,7 @@ router.post('/addCity', async (req, res) => {
         else{
            // If city doesn't exist, insert a new city
         const cityResult = await pool.query(
-            'INSERT INTO city (countryid, stateid, cityname) VALUES ($1, $2, LOWER($3)) RETURNING *',
+            'INSERT INTO city (countryid, stateid, cityname) VALUES ($1, $2, $3) RETURNING *',
             [countryId, stateId, cityName]
         );
                 const totalCountQuery = await pool.query('SELECT COUNT(*) FROM city WHERE isdeleted = false');

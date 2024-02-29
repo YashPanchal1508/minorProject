@@ -35,25 +35,26 @@ const Modal = ({ isOpen, onClose, onSave, selectedCountry, Mode }) => {
 
   const validateForm = () => {
     const newErrors = {};
-
+  
     // Validate country name
-    if (!formData.countryName.match(/^[A-Za-z]{1,50}$/)) {
-      newErrors.countryName = 'Country name should contain only alphabets (max 50 characters)';
+    if (!formData.countryName.match(/^[A-Za-z\s]{1,50}$/)) {
+      newErrors.countryName = 'Country name should contain only alphabets and spaces (max 50 characters)';
     }
-
+  
     // Validate country code
-    if (!formData.countryCode.match(/^[A-Za-z]{1,2}$/)) {
-      newErrors.countryCode = 'Country code should contain only alphabets (max 2 characters)';
+    if (!formData.countryCode.match(/^[A-Za-z\s]{1,2}$/)) {
+      newErrors.countryCode = 'Country code should contain only alphabets and spaces (max 2 characters)';
     }
-
+  
     // Validate phone code
     if (!formData.phoneCode.match(/^\d{1,4}$/)) {
       newErrors.phoneCode = 'Phone code should contain only digits (max 4 digits)';
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
   };
+  
 
   const handleSave = () => {
     if (validateForm()) {
