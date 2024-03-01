@@ -149,14 +149,14 @@ const CountryProvider = ({ children }) => {
 
 
   // update the country
-  const updateCountry = async (id, data) => {
+  const updateCountry = async (id, data,page,limit) => {
     try {
       const response = await fetch(`http://localhost:8000/api/country/updateCountry`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: id, countryName: data.countryName, countryCode: data.countryCode, phoneCode: data.phoneCode }),
+        body: JSON.stringify({ id: id, countryName: data.countryName, countryCode: data.countryCode, phoneCode: data.phoneCode, page ,limit }),
       });
       
       if(!response.ok){
@@ -169,10 +169,13 @@ const CountryProvider = ({ children }) => {
       if (response.ok) {
         // Assuming the response contains the updated country data
         const updatedCountry = await response.json();
-        const { result } = updatedCountry;
+        const { result, pagination } = updatedCountry;
   
         // Update the UI with the new data
         setCountries(result);
+        setCurrentPage(pagination.currentPage)
+        setTotalPage(pagination.totalPages);
+        setCount(pagination.totalCount)
         toast.success('The Country Updated Successfully!')
       } else {
         console.error('Failed to update country:', response.statusText);

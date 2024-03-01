@@ -61,7 +61,7 @@ const StateProvider = ({ children }) => {
       const duplicateData = await checkDuplicateState.json();
       // console.log(duplicateData)
       if (duplicateData.isDuplicate === true) {
-        toast.success("State is Already Exists")
+        toast.error("State is Already Exists")
         return null
       }
 
@@ -74,20 +74,20 @@ const StateProvider = ({ children }) => {
       })
 
       if (!response.ok) {
+       
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const result = await response.json();
-      dispatch(addStateData(result))
-
-      if (result.message === 'State added successfully') {
-        toast.success("State Successfully Added")
-      } else if (result.updateMessage === 'State Updated') {
-        toast.success("State Successfully Added")
+      if(result.error){
+        toast.error(result.error)
       }
-      else {
-        toast.error("Error Adding State")
+      
+      if(result.updateMessage){
+        dispatch(addStateData(result))
+        toast.success(result.updateMessage)
       }
+      
     } catch (error) {
       console.log(error)
     }

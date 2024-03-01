@@ -60,8 +60,8 @@
 
 // export default Sidebar;
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ImEarth } from 'react-icons/im'; // Import icon component for Earth
-import { IoLogOut } from 'react-icons/io5'; // Import icon component for Logout
+import { ImEarth } from 'react-icons/im';
+import { IoLogOut } from 'react-icons/io5';   
 
 const Sidebar = () => {
   const location = useLocation();
@@ -87,7 +87,7 @@ const Sidebar = () => {
         <div className="mt-20 flex flex-col items-start">
           <div className='my-3'>
             <NavLink
-              className={`relative text-xl font-semibold font-mono ${
+              className={`relative text-xl font-mono ${
                 location.pathname === "/country" ? "text-black" : "text-white"
               } hover:text-black transition-colors duration-300 flex items-center`}
               to="/country"
@@ -99,7 +99,7 @@ const Sidebar = () => {
           </div>
           <div className='my-3'>
             <NavLink
-              className={`relative text-xl font-semibold font-mono ${
+              className={`relative text-xl font-mono ${
                 location.pathname === "/state" ? "text-black" : "text-white"
               } hover:text-black transition-colors duration-300 flex items-center`}
               to="/state"
@@ -111,7 +111,7 @@ const Sidebar = () => {
           </div>
           <div className='my-3'> 
             <NavLink
-              className={`relative  text-xl font-semibold font-mono ${
+              className={`relative  text-xl  font-mono ${
                 location.pathname === "/city" ? "text-black" : "text-white"
               } hover:text-black transition-colors duration-300 flex items-center`}
               to="/city"

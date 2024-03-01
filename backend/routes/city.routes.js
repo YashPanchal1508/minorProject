@@ -14,7 +14,7 @@ router.post('/addCity', async (req, res) => {
             const city = existingCity.rows[0];
             if (city.isdeleted) {
                     const updateResult = await pool.query(
-                    'UPDATE city SET countryid =$1, stateid = $2, isdeleted = false WHERE cityid = $3', [countryId, stateId, city.cityid])
+                    'UPDATE city SET countryid =$1, stateid = $2, cityname = $3 ,isdeleted = false WHERE cityid = $4', [countryId, stateId, cityName ,city.cityid])
                     const totalCountQuery = await pool.query('SELECT COUNT(*) FROM city WHERE isdeleted = false');
                     const totalCount = totalCountQuery.rows[0].count;
                     const offset = (page - 1) * limit;
@@ -113,7 +113,7 @@ router.put('/updateCity',async (req, res) => {
     const existingCity = await pool.query('SELECT COUNT(*) FROM city WHERE LOWER(cityname) = LOWER($1) AND stateid = $2 AND isdeleted = false', [cityName.toLowerCase(),stateId]);
 
 
-    if(existingCity.rows[0].count > 0){
+    if(existingCity.rows[0].cityname === cityName && existingCity.rows[0].stateid === stateId){
         return res.status(404).json({ error: 'City already exists.' });
     }
 
@@ -127,7 +127,7 @@ router.put('/updateCity',async (req, res) => {
           const updatedCityWithCountryName = fResult.rows[0];
 
     if (cityUpdate) {
-        res.status(200).json({ message: "City Updated SuccessFully", city: updatedCityWithCountryName })
+        res.status(200).json({ message: "City Updated Successfully", city: updatedCityWithCountryName })
     }
     else {
         res.status(500).json({ error: 'Server Error!' })

@@ -4,23 +4,23 @@ const router = express.Router();
 
 router.post('/getState', async (req, res) => {
 
-    const { page, limit,sort, column } = req.body;
+    const { page, limit, sort, column } = req.body;
 
-    console.log(page,limit,sort,column)
+    console.log(page, limit, sort, column)
     try {
         const totalStateCount = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
         const finalTotal = parseInt(totalStateCount.rows[0].count)
 
         const offset = (page - 1) * limit
-            let query;
+        let query;
 
-            query = `SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false`
+        query = `SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false`
 
-            if(sort && column){
-                    query +=  ` ORDER BY ${column} ${sort === 'asc' ? 'ASC' : 'DESC'}`
-            }
+        if (sort && column) {
+            query += ` ORDER BY ${column} ${sort === 'asc' ? 'ASC' : 'DESC'}`
+        }
 
-            query += ' LIMIT $1 OFFSET $2'  
+        query += ' LIMIT $1 OFFSET $2'
         let result = await pool.query(query, [limit, offset])
 
         if (result) {
@@ -47,7 +47,7 @@ router.post('/getState', async (req, res) => {
 
 router.post('/addState', async (req, res) => {
 
-    const { statename, countryid, page, limit} = req.body
+    const { statename, countryid, page, limit } = req.body
 
     try {
 
@@ -55,52 +55,60 @@ router.post('/addState', async (req, res) => {
             return res.status(400).send("Missing fields");
         }
 
-        let findState = await pool.query('select * from state where lower(statename) = lower ($1)', [statename])
+        let findState = await pool.query(
+            'select count(*) from state where lower(statename) = lower($1) AND countryid = $2 AND isdeleted = false',
+             [statename, countryid]);
 
-        if (findState.rowCount > 0) {
-            const existingState = findState.rows[0];
-            if (existingState.isdeleted) {
-                const updatedQuery = await pool.query('UPDATE state SET countryid = $1, isdeleted = false WHERE statename = $2', [countryid, statename]);
-                const totalCountQuery = await pool.query('SELECT COUNT(*) FROM city WHERE isdeleted = false');
-                const totalCount = totalCountQuery.rows[0].count;
-                const offset = (page - 1) * limit;
+        // console.log(findState)
 
-                const allData = await pool.query('SELECT state.*, country.countryname FROM state JOIN country ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
-
-                return res.status(200).json({ updateMessage: "State Updated", fResult: allData.rows, pagination: {
-                    totalCount,
-                    totalPages: Math.ceil(totalCount / limit),
-                    currentPage: page,
-                  } });
-            } else {
-                return res.status(400).json({ error: 'State already exists' });
-            }
-        } else {
-            const result = await pool.query(
-                'INSERT INTO state (statename, countryid) VALUES (LOWER($1), $2) RETURNING *', [statename, countryid]
-            );
-
-                const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
-                const totalCount = totalCountQuery.rows[0].count;
-
-                // Fetch paginated data of existing countries
-                const offset = (page - 1) * limit;
-             const allData = await pool.query('SELECT state.*, country.countryname FROM state JOIN country ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
-
-            if (result.rows.length > 0) {
-                res.status(201).json({ message: 'State added successfully', fResult: allData.rows, pagination: {
-                    totalCount,
-                    totalPages: Math.ceil(totalCount / limit),
-                    currentPage: page,
-                  } });
-            } else {
-                res.status(400).json({ errorMessage: 'Failed to add state' });
-            }
-
+        if (findState.rows[0].count > 0) {
+            return res.status(400).json({ error: 'State already exists' });
         }
+
+        let existingState = await pool.query('select * from state where lower(statename) = lower($1) AND isdeleted = true', [statename])
+
+        if (existingState.rows.length > 0) {
+            const updatedQuery = await pool.query('UPDATE state SET countryid = $1, statename = $2, isdeleted = false WHERE LOWER(statename) = LOWER($2)', [countryid, statename]);
+            const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
+            const totalCount = totalCountQuery.rows[0].count;
+            const offset = (page - 1) * limit;
+
+            const allData = await pool.query('SELECT state.*, country.countryname FROM state JOIN country ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
+
+            return res.status(200).json({
+                updateMessage: "State Added successfully", fResult: allData.rows, pagination: {
+                    totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                    currentPage: page,
+                }
+            });
+        }
+        const result = await pool.query(
+            'INSERT INTO state (statename, countryid) VALUES ($1, $2) RETURNING *', [statename, countryid]
+        );
+
+        const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
+        const totalCount = totalCountQuery.rows[0].count;
+
+        // Fetch paginated data of existing countries
+        const offset = (page - 1) * limit;
+        const allData = await pool.query('SELECT state.*, country.countryname FROM state JOIN country ON state.countryid = country.countryid  WHERE state.isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
+
+        if (result.rows.length > 0) {
+            res.status(201).json({
+                message: 'State added successfully', fResult: allData.rows, pagination: {
+                    totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                    currentPage: page,
+                }
+            });
+        } else {
+            res.status(400).json({ error: 'Failed to add state' });
+        }
+
     } catch (error) {
         console.log("Error adding State", error);
-        res.status(500).json({ message: "Internal server error" })
+        res.status(500).json({ error: "Internal server error" })
     }
 
 
@@ -108,7 +116,7 @@ router.post('/addState', async (req, res) => {
 
 router.delete('/deleteState/:id', async (req, res) => {
     const id = req.params.id;
-    const {page =1 ,limit = 5} = req.body
+    const { page = 1, limit = 5 } = req.body
     try {
         // Check if the state is associated with any cities
         const cityCheck = await pool.query('SELECT * FROM city WHERE stateid = $1 and isdeleted = false', [id]);
@@ -122,20 +130,22 @@ router.delete('/deleteState/:id', async (req, res) => {
         const result = await pool.query('UPDATE state SET isdeleted = true WHERE stateid = $1 RETURNING *', [id])
 
         const offset = (page - 1) * limit;
-      
-            const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
-            const totalCount = totalCountQuery.rows[0].count;
-      const finalResult = await pool.query(
-        'SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false limit $1 offset $2', 
-        [limit,offset])
+
+        const totalCountQuery = await pool.query('SELECT COUNT(*) FROM state WHERE isdeleted = false');
+        const totalCount = totalCountQuery.rows[0].count;
+        const finalResult = await pool.query(
+            'SELECT state.*, country.countryname FROM state JOIN country  ON state.countryid = country.countryid  WHERE state.isdeleted = false limit $1 offset $2',
+            [limit, offset])
 
 
         if (result.rowCount > 0) {
-            return res.status(200).json({ message: `State deleted successfully.`, result: finalResult.rows, pagination:{
-                totalCount,
-              totalPages: Math.ceil(totalCount / limit),
-              currentPage: page,
-              } });
+            return res.status(200).json({
+                message: `State deleted successfully.`, result: finalResult.rows, pagination: {
+                    totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                    currentPage: page,
+                }
+            });
         } else {
             return res.status(404).json({ message: 'No state found with the provided ID.' });
         }
@@ -159,7 +169,7 @@ router.put('/updateState', async (req, res) => {
 
     console.log(existingState.rows[0].count)
 
-    if(existingState.rows[0].count > 0){
+    if (existingState.rows[0].count > 0) {
         return res.status(404).json({ error: 'State already exists.' });
     }
 
@@ -176,9 +186,9 @@ router.put('/updateState', async (req, res) => {
         const fResult = await pool.query(
             'SELECT s.*, c.countryname FROM state s JOIN country c ON s.countryid = c.countryid WHERE s.stateid = $1',
             [id]
-          );
+        );
 
-          const updatedStateWithCountryName = fResult.rows[0];
+        const updatedStateWithCountryName = fResult.rows[0];
 
         res.status(200).json({ message: 'State successfully updated', country: updatedStateWithCountryName });
     } catch (error) {
@@ -202,9 +212,9 @@ router.post('/getAllStates', async (req, res) => {
     const { countryid } = req.body;
     if (!countryid) {
         return res.status(400).json({ error: 'Country id is required' });
-      }
+    }
     try {
-        const result = await pool.query('SELECT state.* FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1 AND state.isdeleted = false',[countryid]);
+        const result = await pool.query('SELECT state.* FROM state JOIN country ON state.countryid = country.countryid WHERE country.countryid = $1 AND state.isdeleted = false', [countryid]);
 
         res.status(200).json({ result: result.rows })
 
@@ -215,26 +225,26 @@ router.post('/getAllStates', async (req, res) => {
 
 router.post('/checkDuplicateState', async (req, res) => {
     try {
-      const { statename } = req.body;
-  
-      if (typeof statename !== 'string') {
-        return res.status(400).json({ error: 'Invalid countryName provided' });
-      }
-  
-      // Check for duplicate city name
-      const duplicateState = await pool.query(
-        'SELECT COUNT(*) FROM state WHERE LOWER(statename) = LOWER($1) AND isdeleted = false',
-        [statename.toLowerCase()]
-      );
-  
-      res.status(200).json({
-        isDuplicate: duplicateState.rows[0].count > 0, // Check the count in the first row
-      });
+        const { statename } = req.body;
+
+        if (typeof statename !== 'string') {
+            return res.status(400).json({ error: 'Invalid countryName provided' });
+        }
+
+        // Check for duplicate city name
+        const duplicateState = await pool.query(
+            'SELECT COUNT(*) FROM state WHERE LOWER(statename) = LOWER($1) AND isdeleted = false',
+            [statename.toLowerCase()]
+        );
+
+        res.status(200).json({
+            isDuplicate: duplicateState.rows[0].count > 0, // Check the count in the first row
+        });
     } catch (error) {
-      console.error('Error checking duplicate country name:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error checking duplicate country name:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 module.exports = router
 

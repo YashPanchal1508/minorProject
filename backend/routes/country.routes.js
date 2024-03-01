@@ -100,10 +100,6 @@ router.post('/createCountry', async (req, res) => {
   }
 });
 
-
-
-
-
 router.delete('/deleteCountry/:id', async (req, res) => {
   const id = req.params.id;
   const {page,limit} = req.body
@@ -140,20 +136,18 @@ router.delete('/deleteCountry/:id', async (req, res) => {
   }
 });
 
-
-
 router.put('/updateCountry', async (req, res) => {
-  const { id, countryName, countryCode, phoneCode} = req.body;
+  const { id, countryName, countryCode, phoneCode, page, limit} = req.body;
 
   try {
 
     const existingCountry = await pool.query(
-    'select COUNT(*) from country where LOWER(countryname) = LOWER($1) AND isdeleted = false',
+    'select * from country where LOWER(countryname) = LOWER($1) AND isdeleted = false',
       [countryName])
 
-      if(existingCountry.rows[0].count > 0){
-      return res.status(400).json({ error: 'Country name already exists.' });
-    }
+      if (existingCountry.rows[0].phonecode === phoneCode && existingCountry.rows[0].countryname === countryName && existingCountry.rows[0].countrycode === countryCode) {
+        return res.status(400).json({ error: 'Country already exists.' });
+      }
 
     // Update country data in the database
     const result = await pool.query(
@@ -181,9 +175,23 @@ router.put('/updateCountry', async (req, res) => {
     //   [limit, offset]
     // );
 
+       
+    const totalCountQuery = await pool.query('SELECT COUNT(*) FROM country WHERE isdeleted = false');
+    const totalCount = totalCountQuery.rows[0].count;
+
+    // Fetch paginated data of existing countries
+    const offset = (page - 1) * limit;
+    const allData = await pool.query('SELECT * FROM country WHERE isdeleted = false LIMIT $1 OFFSET $2', [limit, offset]);
+
     res.status(200).json({
-      result: result.rows[0],
+      result: allData.rows,
+      pagination: {
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+      }
     });
+
   } catch (error) {
     console.error('Error updating country:', error.message);
     res.status(500).json({ error: 'Internal server error.' });

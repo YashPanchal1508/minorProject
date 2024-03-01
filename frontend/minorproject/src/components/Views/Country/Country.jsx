@@ -118,7 +118,7 @@ function Country() {
     try {
       console.log(formData)
       // Make the update request to the backend API
-      await updateCountry(selectedCountry.countryid, formData);
+      await updateCountry(selectedCountry.countryid, formData, currentPage, rowsPerPage);
 
       // Update the UI with the new data
       const updatedCountryIndex = countries.findIndex(country => country.countryid === selectedCountry.countryid);
