@@ -32,7 +32,7 @@ const CountryProvider = ({ children }) => {
   // };
   const fetchCountries = async (page, limit,sort,column) => {
     try {
-      const response = await fetch('http://localhost:8000/api/country/getCountry', {
+      const response = await fetch('https://backend-pa0u.onrender.com/api/country/getCountry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -69,7 +69,7 @@ const CountryProvider = ({ children }) => {
   const deleteCountries = async (id,page,limit) => {
 
     try {
-      const response = await fetch(`http://localhost:8000/api/country/deleteCountry/${id}`,
+      const response = await fetch(`https://backend-pa0u.onrender.com/api/country/deleteCountry/${id}`,
         {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ const CountryProvider = ({ children }) => {
       //   toast.error("Country is Already Exists")
       // }
 
-      const response = await fetch('http://localhost:8000/api/country/createCountry', {
+      const response = await fetch('https://backend-pa0u.onrender.com/api/country/createCountry', {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ countryname: data.countryName, countrycode: data.countryCode, phonecode: data.phoneCode,page,limit })
@@ -151,7 +151,7 @@ const CountryProvider = ({ children }) => {
   // update the country
   const updateCountry = async (id, data,page,limit) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/country/updateCountry`, {
+      const response = await fetch(`https://backend-pa0u.onrender.com/api/country/updateCountry`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ const CountryProvider = ({ children }) => {
 
       if(searchData.search) {
         response = await fetch(
-          `http://localhost:8000/api/pagination/${country}`,
+          `https://backend-pa0u.onrender.com/api/pagination/${country}`,
           {
             method: 'POST',
             headers: {
@@ -217,7 +217,7 @@ const CountryProvider = ({ children }) => {
         );
       } else {
         response = await fetch(
-          `http://localhost:8000/api/pagination/${country}`,
+          `https://backend-pa0u.onrender.com/api/pagination/${country}`,
           {
             method: 'POST',
             headers: {
@@ -247,7 +247,7 @@ const CountryProvider = ({ children }) => {
 
   const  sort = async(tableName, page,limit, sortBy, sortOrder) => {
 
-    const response = await fetch(`http://localhost:8000/api/sort/${tableName}`, {
+    const response = await fetch(`https://backend-pa0u.onrender.com/api/sort/${tableName}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
