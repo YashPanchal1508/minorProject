@@ -36,7 +36,7 @@ const Login = () => {
     e.preventDefault();
   
     try {
-      const response = await fetch('https://backend-pa0u.onrender.com/api/user/loginUser', {
+      const response = await fetch('http://localhost:8000/api/user/loginUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
