@@ -3,7 +3,11 @@ const app = express();
 const bodyParser = require("body-parser")
 const cors = require('cors');
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://65e6ffa738de878e772b5214--eclectic-twilight-56bc1f.netlify.app',
+    credentials: true
+}
+));
 
 app.use(bodyParser.json());
 const PORT = 8000
