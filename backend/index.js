@@ -5,7 +5,7 @@ const cors = require('cors');
 const serverless = require('serverless-http');
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://backend-pa0u.onrender.com',
     credentials: true
 }));
 
