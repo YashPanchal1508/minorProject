@@ -2,12 +2,8 @@ const express = require('express')
 const app = express();
 const bodyParser = require("body-parser")
 const cors = require('cors');
-const serverless = require('serverless-http');
 
-app.use(cors({
-    origin: 'https://backend-pa0u.onrender.com',
-    credentials: true
-}));
+app.use(cors());
 
 app.use(bodyParser.json());
 const PORT = 8000
