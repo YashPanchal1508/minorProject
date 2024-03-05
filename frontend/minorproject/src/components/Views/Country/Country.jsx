@@ -249,7 +249,7 @@ function Country() {
             </div>
             <button
               type="button"
-              className="inline-block px-4 py-2 text-sm font-bold leading-5 text-white transition-colors duration-150 bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+              className="inline-block px-4 py-2 text-sm font-semibold leading-5 text-white transition-colors duration-150 bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
               onClick={() => handleOpenModal('add',null)}
             >
               Add Country
@@ -272,60 +272,62 @@ function Country() {
             <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
               <TableHead style={{ position: 'sticky', top: 0, background: '#fff' }}>
                 <TableRow>
-                  <TableCell className='text-center'>Country ID</TableCell>
+                  {/* <TableCell className='text-center'>Country ID</TableCell> */}
                  
                   <TableCell
-                    className='text-center cursor-pointer relative'
+                    className='text-center cursor-pointer relative border-r border-gray-200 '
                     onClick={() => handleSort('countryname')}
                   
                   >
 
-                    <span className="mr-3"> Country Name </span>
+                    <span className="font-semibold"> Country Name </span>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                   </TableCell>
                   <TableCell
-                    className='text-center cursor-pointer relative'
+                    className='text-center cursor-pointer relative border-r border-gray-200'
                     onClick={() => handleSort('countrycode')}
                  
                   >
              
 
-                    <span className="text-center"> Country Code </span>
+                    <span className="text-center font-semibold"> Country Code </span>
 
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                   </TableCell>
 
                   <TableCell
-                    className='text-center cursor-pointer relative '
+                    className='text-center cursor-pointer relative border-r border-gray-200'
                     onClick={() => handleSort('phonecode')}
        
                   >
 
-                    <span className=""> Phone Code </span>
+                    <span className="font-semibold"> Phone Code </span>
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                   </TableCell>
 
-                  <TableCell className='text-center'>Action</TableCell>
+                  <TableCell className='text-center'>
+                  <span  className='text-center font-semibold'>  Action</span>
+                    </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {Array.isArray(countries) && countries.length > 0 ? (
                   countries.map((country) => (
                     <TableRow key={country.countryid} hover>
-                      <TableCell className='text-center'>{country.countryid}</TableCell>
-                      <TableCell className='text-center'>{country.countryname}</TableCell>
-                      <TableCell className='text-center'>{country.countrycode}</TableCell>
-                      <TableCell className='text-center'>{country.phonecode}</TableCell>
+                      {/* <TableCell className='text-center'>{country.countryid}</TableCell> */}
+                      <TableCell className='text-center border-r border-gray-200'>{country.countryname}</TableCell>
+                      <TableCell className='text-center border-r border-gray-200'>{country.countrycode}</TableCell>
+                      <TableCell className='text-center border-r border-gray-200'>{country.phonecode}</TableCell>
                       <TableCell className='text-center'>
                
                         <button
-                          className="text-slate-700 mr-2 font-bold"
+                          className="text-slate-700 mr-2 font-semibold"
                           onClick={() => handleOpenModal('edit', country)}
                         >
                           <img src="public\asset\icons8-edit-24.png" alt="EditImage" className='h-5' />
                         </button>
                         <button
-                          className="text-red-500 font-bold"
+                          className="text-red-500 font-semibold"
                           onClick={() => handleDelete(country.countryid)}
                         >
                           <img src="public\asset\icons8-trash-30.png" alt="DeleteButton" className='h-[20px]' />

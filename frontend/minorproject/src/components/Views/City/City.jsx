@@ -386,37 +386,39 @@ const City = () => {
             <TableHead className='sticky top-0 bg-white'>
               <TableRow>
 
-                <TableCell className='text-center'>City ID</TableCell>
-                <TableCell className='text-center cursor-pointer' onClick={() => handleSort('cityname')}
+                {/* <TableCell className='text-center'>City ID</TableCell> */}
+                <TableCell className='text-center cursor-pointer border-r border-gray-200' onClick={() => handleSort('cityname')}
                 
                 >
-                  <span className="mr-1"> City Name </span>
+                  <span className="mr-1 font-semibold"> City Name </span>
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                 </TableCell>
-                <TableCell className='text-center cursor-pointer' onClick={() => handleSort('statename')}
+                <TableCell className='text-center cursor-pointer border-r border-gray-200' onClick={() => handleSort('statename')}
                      
                 >
-                  <span className="mr-1">   State Name</span>  
+                  <span className="mr-1 font-semibold">   State Name</span>  
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                   
                    </TableCell>
-                <TableCell className='text-center cursor-pointer' onClick={() => handleSort('countryname')}
+                <TableCell className='text-center cursor-pointer border-r border-gray-200' onClick={() => handleSort('countryname')}
               
                 >
-                  <span className="mr-1"> Country Name </span> 
+                  <span className="mr-1 font-semibold"> Country Name </span> 
                     {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                 </TableCell>
                 {/* Add more table headers as needed */}
-                <TableCell className='text-center'>Action</TableCell>
+                <TableCell className='text-center'>
+                 <span className='font-semibold'> Action </span>
+                  </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {states.map((city) => (
                 <TableRow key={city.cityid} className="hover:bg-gray-100 text-center">
-                  <TableCell className='text-center'>{city.cityid}</TableCell>
-                  <TableCell className='text-center'>{city.cityname}</TableCell>
-                  <TableCell className='text-center'>{city.statename}</TableCell>
-                  <TableCell className='text-center'>{city.countryname}</TableCell>
+                  {/* <TableCell className='text-center'>{city.cityid}</TableCell> */}
+                  <TableCell className='text-center border-r border-gray-200'>{city.cityname}</TableCell>
+                  <TableCell className='text-center border-r border-gray-200'>{city.statename}</TableCell>
+                  <TableCell className='text-center border-r border-gray-200'>{city.countryname}</TableCell>
                   {/* Add more table cells for additional city data */}
                   <TableCell className='text-center'>
                     <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(city)}>

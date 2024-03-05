@@ -337,38 +337,40 @@ const State = () => {
           <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
             <TableHead className="sticky top-0 bg-white">
               <TableRow>
-                <TableCell className='text-center'>
+                {/* <TableCell className='text-center'>
                   
                   State ID
-                </TableCell>
+                </TableCell> */}
                 <TableCell
-                  className='cursor-pointer text-center'
+                  className='cursor-pointer text-center border-r border-gray-200'
                   onClick={() => handleSort('countryname')}
            
                 >
-                 <span className="mr-1">
+                 <span className="mr-1 font-semibold">
                    Country Name  
                    </span> 
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                 </TableCell>
                 <TableCell
-                  className='cursor-pointer text-center'
+                  className='cursor-pointer text-center border-r border-gray-200'
                   onClick={() => handleSort('statename')}
               
                 >
-                <span className="mr-1"> State Name</span> 
+                <span className="mr-1 font-semibold"> State Name</span> 
                       {sortOrder === 'asc' ? <>&#8593;</> : <>&#8595;</>}
                 </TableCell>
-                <TableCell className='text-center'>Action</TableCell>
+                <TableCell className='text-center'>
+                 <span className='font-semibold'>  Action  </span>
+                   </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {states.length > 0 ? (
                 states.map((state) => (
                   <TableRow key={state.stateid} className='text-center hover:bg-gray-100'>
-                    <TableCell className='text-center'>{state.stateid}</TableCell>
-                    <TableCell className='text-center'>{state.countryname}</TableCell>
-                    <TableCell className='text-center'>{state.statename}</TableCell>
+                    {/* <TableCell className='text-center'>{state.stateid}</TableCell> */}
+                    <TableCell className='text-center border-r border-gray-200'>{state.countryname}</TableCell>
+                    <TableCell className='text-center border-r border-gray-200'>{state.statename}</TableCell>
                     <TableCell className='text-center '>
                       <button className="text-slate-700 hover:underline mr-2 font-bold" onClick={() => handleEdit(state)}>
                         <img src="public\asset\icons8-edit-24.png" alt="EditButton" className='h-5' />

@@ -78,15 +78,19 @@ const StateProvider = ({ children }) => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const result = await response.json();
-      if(result.error){
-        toast.error(result.error)
-      }
-      
-      if(result.updateMessage){
+      if (response.ok) {
+       
+        const result = await response.json();
+        if(result.error){
+          toast.error(result.error)
+        }
+        
+        toast.success(`State added Successfully`)
         dispatch(addStateData(result))
-        toast.success(result.updateMessage)
+
       }
+
+
       
     } catch (error) {
       console.log(error)
