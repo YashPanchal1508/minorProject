@@ -2,6 +2,8 @@ const express = require('express')
 const app = express();
 const bodyParser = require("body-parser")
 const cors = require('cors');
+const dotenv = require('dotenv').config()
+
 
 app.use(cors({
     origin: 'https://65e6ffa738de878e772b5214--eclectic-twilight-56bc1f.netlify.app',
