@@ -19,7 +19,7 @@
     "jsonwebtoken": "^9.0.2",
     "netlify-cli": "^17.17.1",
     "netlify-lambda": "^2.0.16",
-    "nodemon": "^3.0.3",
+    "nodemon": "^3.1.0",
     "pg": "^8.11.3",
     "serverless-http": "^3.2.0",
     "swagger-jsdoc": "^6.2.8",
