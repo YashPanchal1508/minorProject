@@ -70,14 +70,15 @@ const Sidebar = () => {
   const handleLogout = () => {
     // Remove authToken from local storage
     localStorage.removeItem('authToken');
-    localStorage.removeItem('tokenTimestamp');
+    localStorage.removeItem('expiresAt');
+    localStorage.removeItem('UserDetails');
 
     // Redirect to the login page
     navigate('/login');
   };
 
   return (
-    <div className="flex flex-col bg-blue-900 text-white w-[15%] h-screen p-4">
+    <div className="flex flex-col bg-blue-900 w-[15%] h-screen p-4">
       <div className="transition-all duration-300">
         <div className="">
           {/* Hamburger Icon */}
@@ -87,9 +88,9 @@ const Sidebar = () => {
         <div className="mt-20 flex flex-col items-start">
           <div className='my-3'>
             <NavLink
-              className={`relative text-xl font-mono ${
-                location.pathname === "/country" ? "text-black" : "text-white"
-              } hover:text-black transition-colors duration-300 flex items-center`}
+              className={`relative text-xl font-semibold ${
+                location.pathname === "/country" ? "text-yellow-300" : "text-white"
+              }  transition-colors duration-300 flex items-center`}
               to="/country"
             >
               <ImEarth className="inline-block mr-2" /> 
@@ -99,9 +100,9 @@ const Sidebar = () => {
           </div>
           <div className='my-3'>
             <NavLink
-              className={`relative text-xl font-mono ${
-                location.pathname === "/state" ? "text-black" : "text-white"
-              } hover:text-black transition-colors duration-300 flex items-center`}
+              className={`relative text-xl font-semibold  ${
+                location.pathname === "/state" ? "text-yellow-300" : "text-white"
+              }  transition-colors duration-300 flex items-center`}
               to="/state"
             >
               <ImEarth className="inline-block mr-2" /> 
@@ -111,9 +112,9 @@ const Sidebar = () => {
           </div>
           <div className='my-3'> 
             <NavLink
-              className={`relative  text-xl  font-mono ${
-                location.pathname === "/city" ? "text-black" : "text-white"
-              } hover:text-black transition-colors duration-300 flex items-center`}
+              className={`relative text-lg font-semibold  ${
+                location.pathname === "/city" ? "text-yellow-300" : "text-white"
+              }  transition-colors duration-300 flex items-center`}
               to="/city"
             >
               <ImEarth className="inline-block mr-2" />

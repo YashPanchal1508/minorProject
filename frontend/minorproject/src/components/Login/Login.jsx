@@ -57,6 +57,7 @@ const Login = () => {
       
       localStorage.setItem('authToken', data.authToken);
       localStorage.setItem('expiresAt',Date.now());
+      localStorage.setItem('UserDetails', JSON.stringify(credentials));
       // Redirect to home page after successful login
       history('/home');
       } else {

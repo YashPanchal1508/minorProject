@@ -60,7 +60,7 @@ const Register = () => {
         return;
       }
 
-  
+      
 
 
       if (response.ok) {
@@ -72,6 +72,8 @@ const Register = () => {
       console.error('Registration failed:', error);
     }
   };
+
+  
 
   return (
     <>

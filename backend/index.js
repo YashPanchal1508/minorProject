@@ -2,9 +2,12 @@ const express = require('express')
 const app = express();
 const bodyParser = require("body-parser")
 const cors = require('cors');
+const serverless = require('serverless-http');
 
-app.use(cors());
-
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 
 app.use(bodyParser.json());
 const PORT = 8000
