@@ -6,12 +6,15 @@ const pool = new Pool({
     database: 'postgres',
     user: 'postgres',
     password: 'yash',
-})
-   pool.connect((err) => {
-    if (err) {
-     console.error('connection error', err.stack)
-    }else{
-     console.log('connected')}
-    })
+});
 
-   module.exports = pool
+pool.connect((err) => {
+    if (err) {
+        
+        throw new Error('Failed to connect to PostgreSQL database: ' + err.message);
+    } else {
+        console.log('Connected to PostgreSQL database');
+    }
+});
+
+module.exports = pool;
