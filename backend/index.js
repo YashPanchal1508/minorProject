@@ -18,6 +18,9 @@ app.use('/api/user' , require('./routes/auth.routes'))
 app.use('/api' , require('./routes/pagination.routes'))
 app.use('/api/sort' , require('./routes/sort.routes'))
 
+app.get('/', (req,res)=> {
+        res.send("API is running")
+})
 
 
 app.listen(PORT, ()=> {
